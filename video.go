@@ -102,13 +102,3 @@ func overFHD(vInfo FastMediaInfo.Video) bool {
 		return false
 	}
 }
-func diffSize(src, dst string) string {
-	// 获取源文件和目标文件的大小并计算差值
-	srcFileInfo, _ := os.Stat(src)
-	before := fmt.Sprintf("%.3f", float64(srcFileInfo.Size())/(1024*1024))
-	dstFileInfo, _ := os.Stat(dst)
-	after := fmt.Sprintf("%.3f", float64(dstFileInfo.Size())/(1024*1024))
-	sizeDiff := float64(srcFileInfo.Size()-dstFileInfo.Size()) / (1024 * 1024)
-	report := fmt.Sprintf("源文件大小为%sMB,目标文件大小为%sMB,差值为%vMB\n", before, after, sizeDiff)
-	return report
-}
