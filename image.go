@@ -25,7 +25,7 @@ func Convert2AVIF(src string) {
 		return
 	} else {
 		fmt.Printf("转换成功：%s\n", string(out))
-		diffSize(src, dst)
+		DiffSize(src, dst)
 		if e := os.Remove(src); e != nil {
 			log.Fatalf("删除源文件失败：%v\n", err)
 		}

@@ -2,10 +2,11 @@ package archive
 
 import (
 	"fmt"
-	"github.com/zhangyiming748/archive/sqlite"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/zhangyiming748/archive/sqlite"
 )
 
 func init() {
@@ -14,7 +15,7 @@ func init() {
 	s := new(sqlite.Save)
 	s.Sync()
 }
-func diffSize(src, dst string) {
+func DiffSize(src, dst string) {
 	s := new(sqlite.Save)
 	s.FileName = filepath.Base(src)
 
