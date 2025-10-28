@@ -10,6 +10,9 @@ import (
 
 func init() {
 	sqlite.SetSqlite()
+	// 这里同步表结构
+	s := new(sqlite.Save)
+	s.Sync()
 }
 func diffSize(src, dst string) {
 	s := new(sqlite.Save)
