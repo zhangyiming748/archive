@@ -3,6 +3,7 @@ package sqlite
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -11,12 +12,12 @@ import (
 var gormDB *gorm.DB
 
 func SetSqlite() {
-	err := os.MkdirAll("./data", os.ModePerm)
+	home,err:=os.UserHomeDir()
 	if err != nil {
 		log.Fatalf("创建本地sqlite数据库目录失败:%s", err.Error())
 	}
-
-	db, err := gorm.Open(sqlite.Open("./data/sqlite.db"), &gorm.Config{})
+location:=filepath.Join(home,"sqlite.db")
+	db, err := gorm.Open(sqlite.Open(location), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("打开本地sqlite数据库失败:%s", err.Error())
 	}
