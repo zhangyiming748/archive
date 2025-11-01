@@ -10,7 +10,7 @@ func TestConvertOneVideo(t *testing.T) {
 	Convert2H265("G:\\pikpak\\My Pack222\\a.avi")
 }
 func TestInsert2Sqlite(t *testing.T) {
-	DiffSize("G:\\pikpak\\My Pack222\\a.avi", "G:\\pikpak\\My Pack222\\1001.mp4")
+	diffSize("G:\\pikpak\\My Pack222\\a.avi", "G:\\pikpak\\My Pack222\\1001.mp4")
 }
 func TestHistoryModel(t *testing.T) {
 

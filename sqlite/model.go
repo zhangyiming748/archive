@@ -22,7 +22,7 @@ type Save struct {
 func (s *Save) Sync() {
 	log.Printf("开始同步表结构\n")
 	if err := GetSqlite().AutoMigrate(&Save{}); err != nil {
-		log.Fatalf("同步表结构History失败:%s", err.Error())
+		log.Fatalf("同步表结构Save失败:%s", err.Error())
 	}
 	log.Printf("同步表结构完成\n")
 }
