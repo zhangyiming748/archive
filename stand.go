@@ -2,19 +2,23 @@ package archive
 
 import (
 	"fmt"
-	"github.com/zhangyiming748/archive/sqlite"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/zhangyiming748/archive/sqlite"
 )
 
 func init() {
 	sqlite.SetSqlite()
+	// 这里同步表结构
+	s := new(sqlite.Save)
+	s.Sync()
 }
 func diffSize(src, dst string) {
 	s := new(sqlite.Save)
+	s.Sync()
 	s.FileName = filepath.Base(src)
-
 	// 获取源文件和目标文件的大小并计算差值
 	srcFileInfo, _ := os.Stat(src)
 	s.Before = fmt.Sprintf("%.3f", float64(srcFileInfo.Size())/(1024*1024))
