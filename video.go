@@ -19,6 +19,11 @@ import (
 最终转换视频文件为带hvc1标签的MP4文件
 */
 func Convert2H265(src string) {
+	if strings.ToLower(filepath.Ext(src)) != ".mkv" {
+		log.Printf("检测到mkv文件:%s,使用mkv逻辑单独处理", src)
+		CloneMkv2H265(src)
+		return
+	}
 	mi := FastMediaInfo.GetStandMediaInfo(src)
 	vInfo := mi.Video
 	var cmd *exec.Cmd
