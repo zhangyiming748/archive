@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/zhangyiming748/archive/sqlite"
+	"github.com/zhangyiming748/finder"
 )
 
 func TestConvertOther(t *testing.T) {
@@ -25,5 +26,11 @@ func TestHistoryModel(t *testing.T) {
 	err := s.Insert()
 	if err != nil {
 		t.Errorf("插入数据失败: %v", err)
+	}
+}
+func TestConvertH264(t *testing.T) {
+	files := finder.FindAllVideos("E:\\pikpak\\My Pack")
+	for _, file := range files {
+		FastConvertVideo2StandAvc(file)
 	}
 }

@@ -231,3 +231,31 @@ func CloneMkv2H265(src string) {
 		log.Fatalf("重命名文件失败：%v\n", err)
 	}
 }
+
+/*
+*
+快速转换视频文件为标准H264(avc)视频
+*/
+func FastConvertVideo2StandAvc(src string) {
+	mi := FastMediaInfo.GetStandMediaInfo(src)
+	if mi.Video.Format == "AVC" || mi.Video.Format == "HEVC" {
+		if strings.ToLower(filepath.Ext(src)) != ".mp4" {
+			log.Printf("文件已经转换过:%s\n", src)
+			return
+		}
+	}
+
+	tmp_name := strings.Replace(src, filepath.Ext(src), "_fast.mp4", 1)
+	cmd := exec.Command("ffmpeg", "-i", src, "-c:v", "libx264", "-c:a", "aac", "-map_chapters", "-1", tmp_name)
+	log.Printf("开始执行命令:%s\n", cmd.String())
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
+	} else {
+		log.Printf("转换成功：%s\n", string(out))
+		err := os.Remove(src)
+		if err != nil {
+			log.Fatalf("删除源文件失败：%v\n", err)
+		}
+	}
+}
