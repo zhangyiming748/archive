@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/h2non/filetype"
 )
 
 // 音频处理相关的常量定义
@@ -27,68 +25,12 @@ const (
 	Volume = "2.7"
 )
 
-// ArchiveAudio 处理指定类型的音频文件
-// mytype 参数指定音频类型，可以是AudioBookType或RapMusicType
-//func ArchiveAudio(mytype string) {
-//	p := constant.GetParams()
-//	files, _ := GetAllAudioFiles(p.GetMainFolder())
-//	for _, file := range files {
-//		ConvertAudio(file, mytype)
-//	}
-//}
-
-// GetAllAudioFiles 返回指定目录下所有音频文件的绝对路径
-// root 为要搜索的根目录
-// 返回音频文件路径列表和可能的错误
-func GetAllAudioFiles(root string) ([]string, error) {
-	var files []string
-
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		// 跳过目录，只收集文件
-		if !info.IsDir() {
-			absPath, err := filepath.Abs(path)
-			if err != nil {
-				return err
-			}
-			if isAudio(absPath) {
-				files = append(files, absPath)
-			}
-		}
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-	return files, nil
-}
-
-// isAudio 检查文件是否为音频文件
-// fp 为文件路径
-// 返回布尔值表示是否为音频文件
-func isAudio(fp string) bool {
-	file, err := os.Open(fp)
-	if err != nil {
-		return false
-	}
-	defer file.Close()
-	head := make([]byte, 261)
-	if _, err := file.Read(head); err != nil {
-		return false
-	}
-	return filetype.IsAudio(head)
-}
-
-// ConvertAudio 转换音频文件
-// src 为源文件路径
-// mytype 为音频类型，决定处理方式
+/*
+ConvertAudio 转换音频文件
+src 为源文件路径
+mytype 为音频类型，决定处理方式
+*/
 func ConvertAudio(src, mytype string) {
-	if !isAudio(src) {
-		return
-	}
 	// 生成临时文件路径
 	purgePath := filepath.Dir(src)
 	seed := rand.New(rand.NewSource(time.Now().Unix()))
