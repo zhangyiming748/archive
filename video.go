@@ -22,9 +22,6 @@ func ConvertMKV2H265(src string) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	if runtime.GOARCH == "arm64" && runtime.GOOS == "linux" {
-		args = append(args, "-threads", "1")
-	}
 	purgePath := filepath.Dir(src)
 	seed := rand.New(rand.NewSource(time.Now().Unix()))
 	b := seed.Intn(2000) + 1000
@@ -84,9 +81,6 @@ func Convert2H265(src string) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	if runtime.GOARCH == "arm64" && runtime.GOOS == "linux" {
-		args = append(args, "-threads", "1")
-	}
 	purgePath := filepath.Dir(src)
 	seed := rand.New(rand.NewSource(time.Now().Unix()))
 	b := seed.Intn(2000) + 1000
@@ -169,16 +163,13 @@ func overFHD(vInfo FastMediaInfo.Video) bool {
 */
 func CloneMkv2H265(src string) {
 	if strings.ToLower(filepath.Ext(src)) != ".mkv" {
-		log.Printf("文件格式不是mkv，请检查文件:%s\n", src)
+		log.Printf("文件格式不是mkv,请检查文件:%s\n", src)
 		return
 	}
 	mi := FastMediaInfo.GetStandMediaInfo(src)
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	if runtime.GOARCH == "arm64" && runtime.GOOS == "linux" {
-		args = append(args, "-threads", "1")
-	}
 	purgePath := filepath.Dir(src)
 	seed := rand.New(rand.NewSource(time.Now().Unix()))
 	b := seed.Intn(2000) + 1000
