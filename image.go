@@ -13,6 +13,10 @@ import (
 最终转换图片为 avif格式
 */
 func Convert2AVIF(src string) {
+	if strings.ToLower(filepath.Ext(src)) == ".gif" {
+		log.Printf("跳过gif文件:%v\n", src)
+		return
+	}
 	dst := strings.Replace(src, filepath.Ext(src), ".avif", 1)
 	args := []string{"-i", src}
 	args = append(args, "-c:v", "libaom-av1")
