@@ -35,5 +35,9 @@ func TestConvertH264(t *testing.T) {
 	}
 }
 func TestFastMkv(t *testing.T) {
-	FastConvertMkv()
+	files := finder.FindAllMkvVideos("/Volumes/A1/alist/alist/R18")
+	for _, file := range files {
+		t.Logf("正在处理文件:%v\n", file)
+		FastConvertMkv(file)
+	}
 }
