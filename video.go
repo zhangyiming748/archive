@@ -255,15 +255,14 @@ func FastConvertVideo2StandAvc(src string) {
 */
 func FastConvertMkv(src string) {
 	if strings.ToLower(filepath.Ext(src)) != ".mkv" {
-		log.Printf("文件格式不是mkv，请检查文件:%s\n", src)
+		log.Printf("文件格式不是mkv,请检查文件:%s\n", src)
 		return
 	}
 	var cmd *exec.Cmd
 	mp4 := strings.Replace(src, filepath.Ext(src), ".mp4", 1)
 	args := []string{"-i", src}
 	args = append(args, "-c:v", "copy")
-	args = append(args, "-c:a", "aac")
-	args = append(args, "-c:a", "aac")
+	args = append(args, "-c:a", "copy")
 	args = append(args, "-map_chapters", "-1")
 	args = append(args, mp4)
 	cmd = exec.Command("ffmpeg", args...)
