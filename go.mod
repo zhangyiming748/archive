@@ -5,7 +5,7 @@ go 1.25.6
 require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/zhangyiming748/FastMediaInfo v0.0.7
-	github.com/zhangyiming748/finder v0.0.6
+	github.com/zhangyiming748/finder v0.0.7
 	gorm.io/gorm v1.31.1
 )
 
