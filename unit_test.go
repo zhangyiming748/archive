@@ -34,3 +34,6 @@ func TestConvertH264(t *testing.T) {
 		FastConvertVideo2StandAvc(file)
 	}
 }
+func TestFastMkv(t *testing.T) {
+	FastConvertMkv()
+}
