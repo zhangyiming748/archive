@@ -290,6 +290,11 @@ func MergeMp4WithSameNameSrt(video, srt string) error {
 	args = append(args, output)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("当前生成的内嵌字幕的命令是:%v\n", cmd.String())
-	_, err := cmd.CombinedOutput()
+	b, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("内嵌字幕失败：%v\n输出内容%s\n", err, string(b))
+	} else {
+		log.Printf("内嵌字幕成功：%s\n", string(b))
+	}
 	return err
 }
