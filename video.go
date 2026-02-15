@@ -249,3 +249,19 @@ func FastConvertVideo2StandAvc(src string) {
 		}
 	}
 }
+
+func MergeMp4WithSameNameSrt(video, srt string) error {
+	//ffmpeg -i input.mp4 -vf "subtitles=subtitle.srt" output.mp4
+	var cmd *exec.Cmd
+	args := []string{"-i", video}
+	args = append(args, "-vf", "subtitles="+srt)
+	args = append(args, "-c:v", "libx265")
+	args = append(args, "-tag:v", "hvc1")
+	args = append(args, "-c:a", "aac")
+	output := strings.Replace(srt, filepath.Ext(srt), "_subInside.mp4", 1)
+	args = append(args, output)
+	cmd = exec.Command("ffmpeg", args...)
+	log.Printf("当前生成的内嵌字幕的命令是:%v\n", cmd.String())
+	_, err := cmd.CombinedOutput()
+	return err
+}
