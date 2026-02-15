@@ -34,6 +34,7 @@ func TestConvertH264(t *testing.T) {
 		FastConvertVideo2StandAvc(file)
 	}
 }
+
 //go test -v -timeout 0 -run TestFastMkv
 func TestFastMkv(t *testing.T) {
 	files := finder.FindAllMkvVideos("/Volumes/A1/alist/alist/哔哩哔哩")

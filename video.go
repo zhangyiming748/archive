@@ -277,6 +277,7 @@ func FastConvertMkv(src string) {
 			log.Fatalf("删除源文件失败：%v\n", err)
 		}
 	}
+}
 func MergeMp4WithSameNameSrt(video, srt string) error {
 	//ffmpeg -i input.mp4 -vf "subtitles=subtitle.srt" output.mp4
 	var cmd *exec.Cmd
