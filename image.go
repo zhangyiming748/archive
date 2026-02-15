@@ -18,11 +18,14 @@ func Convert2AVIF(src string) {
 		return
 	}
 	dst := strings.Replace(src, filepath.Ext(src), ".avif", 1)
-	args := []string{"-i", src}
-	args = append(args, "-c:v", "libaom-av1")
-	args = append(args, "-still-picture", "1")
+	// avifenc --codec aom --min 20 --max 30 --speed 6
+	args := []string{"--codec", "aom"}
+	args = append(args, "--min", "20")
+	args = append(args, "--max", "30")
+	args = append(args, "--speed", "0")
+	args = append(args, src)
 	args = append(args, dst)
-	cmd := exec.Command("ffmpeg", args...)
+	cmd := exec.Command("avifenc", args...)
 	log.Printf("开始运行转换命令:%v\n", cmd.String())
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.Printf("转换失败：%v\n源文件%v\n", err, src)

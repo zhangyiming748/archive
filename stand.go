@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/zhangyiming748/archive/sqlite"
@@ -14,7 +15,47 @@ func init() {
 	// 这里同步表结构
 	s := new(sqlite.Save)
 	s.Sync()
+
+	//在这里实现检测依赖，即判断当前的操作系统是否存在ffmpeg，libavif，mediainfo命令
+	checkDependencies()
 }
+
+// checkDependencies 检测系统中是否存在必要的依赖命令
+func checkDependencies() {
+	commands := map[string]string{
+		"ffmpeg":    "FFmpeg is a complete, cross-platform solution to record, convert and stream audio and video.",
+		"mediainfo": "MediaInfo is a convenient unified display of the most relevant technical and tag data for video and audio files.",
+		"avifenc":   "AVIF encoder (libavif) is used for encoding images to AVIF format.",
+	}
+
+	missingDeps := []string{}
+
+	for command, description := range commands {
+		if !isCommandAvailable(command) {
+			missingDeps = append(missingDeps, command)
+			log.Printf("警告: 未找到依赖命令 '%s' - %s\n", command, description)
+		} else {
+			log.Printf("成功: 找到依赖命令 '%s'\n", command)
+		}
+	}
+
+	// 检查是否有缺失的依赖
+	if len(missingDeps) > 0 {
+		log.Fatalf("缺少以下必要依赖: %v，请安装后再运行程序。\n", missingDeps)
+	} else {
+		log.Println("所有必要依赖均已找到，程序可以正常运行。")
+	}
+}
+
+// isCommandAvailable 检查指定的命令是否在系统中可用
+func isCommandAvailable(name string) bool {
+	// 在Windows系统上，需要添加.exe扩展名
+	if _, err := exec.LookPath(name); err != nil {
+		return false
+	}
+	return true
+}
+
 func diffSize(src, dst string) {
 	s := new(sqlite.Save)
 	s.Sync()

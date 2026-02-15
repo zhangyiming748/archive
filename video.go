@@ -250,6 +250,33 @@ func FastConvertVideo2StandAvc(src string) {
 	}
 }
 
+/*
+快速转换错误(包括不是电影 不带特效字幕的视频)的mkv文件
+*/
+func FastConvertMkv(src string) {
+	if strings.ToLower(filepath.Ext(src)) != ".mkv" {
+		log.Printf("文件格式不是mkv,请检查文件:%s\n", src)
+		return
+	}
+	var cmd *exec.Cmd
+	mp4 := strings.Replace(src, filepath.Ext(src), ".mp4", 1)
+	args := []string{"-i", src}
+	args = append(args, "-c:v", "copy")
+	args = append(args, "-c:a", "copy")
+	args = append(args, "-map_chapters", "-1")
+	args = append(args, mp4)
+	cmd = exec.Command("ffmpeg", args...)
+	log.Printf("开始执行命令:%s\n", cmd.String())
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
+	} else {
+		log.Printf("转换成功：%s\n", string(out))
+		err := os.Remove(src)
+		if err != nil {
+			log.Fatalf("删除源文件失败：%v\n", err)
+		}
+	}
 func MergeMp4WithSameNameSrt(video, srt string) error {
 	//ffmpeg -i input.mp4 -vf "subtitles=subtitle.srt" output.mp4
 	var cmd *exec.Cmd
