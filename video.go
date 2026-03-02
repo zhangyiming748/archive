@@ -298,3 +298,49 @@ func MergeMp4WithSameNameSrt(video, srt string) error {
 	}
 	return err
 }
+
+const (
+	ToRight = "ClockWise90"
+	ToLeft  = "ClockWise270"
+)
+
+func RotateVideo(src string, direction string) {
+	var (
+		cmd  *exec.Cmd
+		args []string
+	)
+	tmp_name := strings.Replace(src, filepath.Ext(src), "_rotate.mp4", 1)
+	args = append(args, "-i", src)
+	switch direction {
+	case ToRight:
+		args = append(args, "-vf", "transpose=1")
+	case ToLeft:
+		args = append(args, "-vf", "transpose=2")
+	default:
+		log.Printf("请输入正确的旋转方向:%s\n", direction)
+		return
+	}
+	args = append(args, "-c:v", "libx265")
+	args = append(args, "-tag:v", "hvc1")
+	args = append(args, "-c:a", "aac")
+	args = append(args, "-map_chapters", " -1")
+	cmd = exec.Command("ffmpeg", args...)
+	log.Printf("开始执行命令:%s\n", cmd.String())
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("旋转失败：%v\n输出内容%s\n", err, string(out))
+	} else {
+		log.Printf("旋转成功：%s\n", string(out))
+		/*
+			1. 删除旧文件
+			2. 临时文件改为旧文件的文件名
+		*/
+		if err := os.Remove(src); err != nil {
+			log.Printf("删除源文件失败：%v\n", err)
+		} else {
+			if err := os.Rename(tmp_name, strings.Replace(src, filepath.Ext(src), ".mp4", 1)); err != nil {
+				log.Printf("重命名文件失败：%v\n", err)
+			}
+		}
+	}
+}
