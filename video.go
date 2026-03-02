@@ -324,6 +324,7 @@ func RotateVideo(src string, direction string) {
 	args = append(args, "-tag:v", "hvc1")
 	args = append(args, "-c:a", "aac")
 	args = append(args, "-map_chapters", " -1")
+	args = append(args, tmp_name)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	out, err := cmd.CombinedOutput()
