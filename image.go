@@ -17,6 +17,10 @@ func Convert2AVIF(src string) {
 		log.Printf("跳过gif文件:%v\n", src)
 		return
 	}
+	if strings.ToLower(filepath.Ext(src)) == ".avif" {
+		log.Printf("跳过avif文件:%v\n", src)
+		return
+	}
 	dst := strings.Replace(src, filepath.Ext(src), ".avif", 1)
 	// avifenc --codec aom --min 20 --max 30 --speed 6
 	args := []string{"--codec", "aom"}
