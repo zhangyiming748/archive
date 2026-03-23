@@ -59,7 +59,7 @@ func ConvertBMP2AVIF4JPG(src, dst string) {
 		return
 	}
 	middle := strings.Replace(src, filepath.Ext(src), ".png", 1)
-	args := []string{"convert"}
+	args := []string{}
 	args = append(args, src)
 	args = append(args, middle)
 	cmd := exec.Command("magick", args...)
