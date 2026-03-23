@@ -12,16 +12,22 @@ import (
 /*
 最终转换图片为 avif格式
 */
-func Convert2AVIF(src string) {
+func Convert2AVIF(src string) error {
+	dst := strings.Replace(src, filepath.Ext(src), ".avif", 1)
 	if strings.ToLower(filepath.Ext(src)) == ".gif" {
 		log.Printf("跳过gif文件:%v\n", src)
-		return
+		return nil
+	}
+	if strings.ToLower(filepath.Ext(src)) == ".bmp" {
+		log.Printf("走bmp逻辑:%v\n", src)
+		ConvertBMP2AVIF4JPG(src, dst)
+		return nil
 	}
 	if strings.ToLower(filepath.Ext(src)) == ".avif" {
 		log.Printf("跳过avif文件:%v\n", src)
-		return
+		return nil
 	}
-	dst := strings.Replace(src, filepath.Ext(src), ".avif", 1)
+	//dst := strings.Replace(src, filepath.Ext(src), ".avif", 1)
 	// avifenc --codec aom --min 20 --max 30 --speed 6
 	args := []string{"--codec", "aom"}
 	args = append(args, "--min", "20")
@@ -32,13 +38,41 @@ func Convert2AVIF(src string) {
 	cmd := exec.Command("avifenc", args...)
 	log.Printf("开始运行转换命令:%v\n", cmd.String())
 	if out, err := cmd.CombinedOutput(); err != nil {
-		log.Printf("转换失败：%v\n源文件%v\n", err, src)
-		return
+		return fmt.Errorf("转换失败：%v\n源文件%v\n", err, src)
 	} else {
 		fmt.Printf("转换成功：%s\n", string(out))
 		diffSize(src, dst)
 		if e := os.Remove(src); e != nil {
-			log.Fatalf("删除源文件失败：%v\n", err)
+			return fmt.Errorf("删除源文件失败：%v\n", err)
+		}
+	}
+	return nil
+}
+
+/*
+bmp先使用ffmpeg转换成中间格式jpg，再使用avifenc转换成avif
+需要安装用 ImageMagick（macOS 上 brew install imagemagick）
+*/
+func ConvertBMP2AVIF4JPG(src, dst string) {
+	if strings.ToLower(filepath.Ext(src)) != ".bmp" {
+		log.Printf("不是bmp文件:%v\n", src)
+		return
+	}
+	middle := strings.Replace(src, filepath.Ext(src), ".png", 1)
+	args := []string{"convert"}
+	args = append(args, src)
+	args = append(args, middle)
+	cmd := exec.Command("magick", args...)
+	log.Printf("开始运行转换命令:%v\n", cmd.String())
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.Printf("中间文件转换失败,保留原文件%v\n", src)
+		return
+	} else {
+		log.Printf("中间文件转换成功：%s\n", string(out))
+		if err := Convert2AVIF(middle); err != nil {
+			log.Printf("中间文件转换错误,保留中间文件：%v\t删除源文件%v\n", middle, src)
+		} else {
+			log.Printf("中间文件转换成功,删除中间文件：%v\t删除源文件%v\n", middle, src)
 		}
 	}
 }
