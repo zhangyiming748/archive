@@ -71,8 +71,11 @@ func ConvertBMP2AVIF4JPG(src, dst string) {
 		log.Printf("中间文件转换成功：%s\n", string(out))
 		if err := Convert2AVIF(middle); err != nil {
 			log.Printf("中间文件转换错误,保留中间文件：%v\t删除源文件%v\n", middle, src)
+			os.Remove(src)
 		} else {
 			log.Printf("中间文件转换成功,删除中间文件：%v\t删除源文件%v\n", middle, src)
+			os.Remove(middle)
+			os.Remove(src)
 		}
 	}
 }
