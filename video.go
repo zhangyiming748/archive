@@ -16,7 +16,7 @@ import (
 
 // 转换mkv文件为h265格式,但保留全部的音频轨、字幕轨
 // ffmpeg -i .\天将雄狮.Dragon.Blade.2015.BluRay.1080p.x265.10bit.MNHD-FRDS.mkv -map 0 -c:v libx265 -c:a aac -tag:v hvc1 -c:s copy 天将雄狮.mkv
-func ConvertMKV2H265(src string) {
+func ConvertMKV2H265(src string,fhd bool) {
 	mi := FastMediaInfo.GetStandMediaInfo(src)
 	vInfo := mi.Video
 	var cmd *exec.Cmd
@@ -34,7 +34,7 @@ func ConvertMKV2H265(src string) {
 	args = append(args, "-tag:v", "hvc1")
 	args = append(args, "-c:a", "aac")
 	args = append(args, "-c:s", "copy")
-	if FHD {
+	if fhd {
 		if overFHD(vInfo) {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
 		}
@@ -72,7 +72,7 @@ func ConvertMKV2H265(src string) {
 /*
 最终转换视频文件为带hvc1标签的MP4文件
 */
-func Convert2H265(src string, FHD bool) {
+func Convert2H265(src string, fhd bool) {
 	if strings.ToLower(filepath.Ext(src)) == ".mkv" {
 		log.Printf("检测到mkv文件:%s,使用mkv逻辑单独处理", src)
 		CloneMkv2H265(src)
@@ -99,7 +99,7 @@ func Convert2H265(src string, FHD bool) {
 	} else {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
 		args = append(args, "-c:v", "libx265", "-c:a", "aac", "-tag:v", "hvc1")
-		if FHD {
+		if fhd {
 			if overFHD(vInfo) {
 				args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
 			}

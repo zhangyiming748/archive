@@ -8,10 +8,10 @@ import (
 )
 
 func TestConvertOther(t *testing.T) {
-	Convert2H265("G:\\pikpak\\My Pack222\\a.avi")
+	Convert2H265("G:\\pikpak\\My Pack222\\a.avi", false)
 }
 func TestConvertMkv(t *testing.T) {
-	ConvertMKV2H265("Q:\\q\\成龙(1)\\火烧岛.Island.Of.Fire.1991.1080p.x265.10bit.2Audio.MNHD-FRDS.mkv")
+	ConvertMKV2H265("Q:\\q\\成龙(1)\\火烧岛.Island.Of.Fire.1991.1080p.x265.10bit.2Audio.MNHD-FRDS.mkv", false)
 }
 func TestInsert2Sqlite(t *testing.T) {
 	diffSize("G:\\pikpak\\My Pack222\\a.avi", "G:\\pikpak\\My Pack222\\1001.mp4")
