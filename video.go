@@ -34,8 +34,10 @@ func ConvertMKV2H265(src string) {
 	args = append(args, "-tag:v", "hvc1")
 	args = append(args, "-c:a", "aac")
 	args = append(args, "-c:s", "copy")
-	if overFHD(vInfo) {
-		args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+	if FHD {
+		if overFHD(vInfo) {
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+		}
 	}
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
@@ -70,7 +72,7 @@ func ConvertMKV2H265(src string) {
 /*
 最终转换视频文件为带hvc1标签的MP4文件
 */
-func Convert2H265(src string) {
+func Convert2H265(src string, FHD bool) {
 	if strings.ToLower(filepath.Ext(src)) == ".mkv" {
 		log.Printf("检测到mkv文件:%s,使用mkv逻辑单独处理", src)
 		CloneMkv2H265(src)
@@ -97,9 +99,12 @@ func Convert2H265(src string) {
 	} else {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
 		args = append(args, "-c:v", "libx265", "-c:a", "aac", "-tag:v", "hvc1")
-		if overFHD(vInfo) {
-			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+		if FHD {
+			if overFHD(vInfo) {
+				args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+			}
 		}
+
 	}
 	args = append(args, "-c:a", "aac")
 	args = append(args, "-map_chapters", "-1")
