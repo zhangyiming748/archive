@@ -16,7 +16,7 @@ import (
 
 // 转换mkv文件为h265格式,但保留全部的音频轨、字幕轨
 // ffmpeg -i .\天将雄狮.Dragon.Blade.2015.BluRay.1080p.x265.10bit.MNHD-FRDS.mkv -map 0 -c:v libx265 -c:a aac -tag:v hvc1 -c:s copy 天将雄狮.mkv
-func ConvertMKV2H265(src string,fhd bool) {
+func ConvertMKV2H265(src string, fhd bool) {
 	mi := FastMediaInfo.GetStandMediaInfo(src)
 	vInfo := mi.Video
 	var cmd *exec.Cmd

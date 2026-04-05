@@ -1,11 +1,11 @@
 module github.com/zhangyiming748/archive
 
-go 1.25.6
+go 1.26.1
 
 require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/zhangyiming748/FastMediaInfo v0.0.7
-	github.com/zhangyiming748/finder v0.0.7
+	github.com/zhangyiming748/finder v0.0.9
 	gorm.io/gorm v1.31.1
 )
 
