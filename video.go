@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/zhangyiming748/FastMediaInfo"
+	"github.com/zhangyiming748/archive/util"
 )
 
 // 转换mkv文件为h265格式,但保留全部的音频轨、字幕轨
@@ -348,5 +349,24 @@ func RotateVideo(src string, direction string) {
 				log.Printf("重命名文件失败：%v\n", err)
 			}
 		}
+	}
+}
+
+/*
+视频文件提取为同名aac音频
+*/func ExtractAudioFromVideo(src string) {
+	var cmd *exec.Cmd
+	args := []string{"-i", src}
+	args = append(args, "-c:a", "aac")
+	args = append(args, "-vn")
+	args = append(args, strings.Replace(src, filepath.Ext(src), ".aac", 1))
+	cmd = exec.Command("ffmpeg", args...)
+	log.Printf("开始执行命令:%s\n", cmd.String())
+	err := util.ExecuteCommandWithRealtimeOutput(cmd)
+	if err != nil {
+		log.Printf("提取音频失败：%v\n", err)
+	} else {
+		log.Printf("提取音频成功：\n") 
+		os.Remove(src)
 	}
 }
