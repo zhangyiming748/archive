@@ -93,5 +93,7 @@ func diffSize(src, dst string) {
 		log.Printf("源文件%v比目标文件%v小%.3f MB\n", src, dst, -sizeDiff)
 	}
 	log.Printf("源文件%v与目标文件%v大小差值为: %.3f MB\n", src, dst, sizeDiff)
-	s.Insert()
+	if err := s.Insert(); err != nil {
+		log.Printf("记录文件大小信息到数据库失败: %v\n", err)
+	}
 }
