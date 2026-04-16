@@ -44,7 +44,7 @@ func CheckVideoDependencies() {
 }
 func CheckImageDependencies() {
 	commands := map[string]string{
-		"avifenc":   "AVIF encoder (libavif) is used for encoding images to AVIF format.",
+		"avifenc": "AVIF encoder (libavif) is used for encoding images to AVIF format.",
 	}
 
 	missingDeps := []string{}

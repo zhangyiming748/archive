@@ -43,9 +43,10 @@ func TestFastMkv(t *testing.T) {
 		FastConvertMkv(file)
 	}
 }
-//go test -v -timeout 0 -run TestExtractAudioFromVideo
+
+// go test -v -timeout 0 -run TestExtractAudioFromVideo
 func TestExtractAudioFromVideo(t *testing.T) {
-	files:=finder.FindAllVideos("G:\\alist\\dys\\video")
+	files := finder.FindAllVideos("G:\\alist\\dys\\video")
 	for _, file := range files {
 		t.Logf("正在处理文件:%v\n", file)
 		ExtractAudioFromVideo(file)

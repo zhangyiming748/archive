@@ -99,15 +99,17 @@ func Convert2H265(src string, fhd bool) {
 
 	} else {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
-		args = append(args, "-c:v", "libx265", "-c:a", "aac", "-tag:v", "hvc1")
-		if fhd {
-			if overFHD(vInfo) {
-				args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
-			}
+		args = append(args, "-c:v", "libx265")
+		args = append(args, "-tag:v", "hvc1")
+		args = append(args, "-c:a", "aac")
+		args = append(args, "-preset", "slow")
+		args = append(args, "-crf", "23")
+		args = append(args, "-pix_fmt", "yuv420p10le")
+		args = append(args, "-x265-params", "aq-mode=2:psy-rd=2.0:psy-rdoq=2.0")
+		if overFHD(vInfo) {
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
 		}
-
 	}
-	args = append(args, "-c:a", "aac")
 	args = append(args, "-map_chapters", "-1")
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
@@ -366,7 +368,7 @@ func RotateVideo(src string, direction string) {
 	if err != nil {
 		log.Printf("提取音频失败：%v\n", err)
 	} else {
-		log.Printf("提取音频成功：\n") 
+		log.Printf("提取音频成功：\n")
 		os.Remove(src)
 	}
 }
