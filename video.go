@@ -89,14 +89,24 @@ func Convert2H265(src string, fhd bool) {
 	tmp := strconv.Itoa(b)
 	tmp = strings.Join([]string{tmp, ".mp4"}, "")
 	dst := filepath.Join(purgePath, tmp)
+
+	// 优先检查分辨率是否需要转换
+	needsResize := fhd && overFHD(vInfo)
+
 	if isH265(vInfo) && filepath.Ext(src) == ".mp4" {
-		if hasTag(vInfo) {
-			log.Printf("跳过已经是h265编码并且带有hvc1标签的视频文件:%s\n", src)
+		if hasTag(vInfo) && !needsResize {
+			log.Printf("跳过已经是h265编码并且带有hvc1标签且分辨率符合要求的视频文件:%s\n", src)
 			return
 		}
-		log.Printf("处理HEVC编码但是不带有hvc1标签的视频文件:%s\n", src)
+		if needsResize {
+			log.Printf("处理HEVC编码带有hvc1标签但分辨率超标的视频文件:%s\n", src)
+		} else {
+			log.Printf("处理HEVC编码但是不带有hvc1标签的视频文件:%s\n", src)
+		}
 		args = append(args, "-c:v", "copy", "-c:a", "copy", "-tag:v", "hvc1")
-
+		if needsResize {
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+		}
 	} else {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
 		args = append(args, "-c:v", "libx265")
@@ -107,7 +117,7 @@ func Convert2H265(src string, fhd bool) {
 		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
 		args = append(args, "-pix_fmt", "yuv420p")
 		args = append(args, "-x265-params", "aq-mode=3:aq-strength=1.0") // 更激进的自适应量化以减小文件大小
-		if overFHD(vInfo) {
+		if needsResize {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
 		}
 	}
@@ -184,18 +194,28 @@ func CloneMkv2H265(src string) {
 	tmp := strconv.Itoa(b)
 	tmp = strings.Join([]string{tmp, ".mkv"}, "")
 	dst := filepath.Join(purgePath, tmp)
+
+	// 优先检查分辨率是否需要转换（MKV默认启用FHD检查）
+	needsResize := overFHD(vInfo)
+
 	if isH265(vInfo) && strings.ToLower(filepath.Ext(src)) == ".mkv" {
-		if hasTag(vInfo) {
-			log.Printf("跳过已经是h265编码并且带有hvc1标签的mkv视频文件:%s\n", src)
+		if hasTag(vInfo) && !needsResize {
+			log.Printf("跳过已经是h265编码并且带有hvc1标签且分辨率符合要求的mkv视频文件:%s\n", src)
 			return
+		}
+		if needsResize {
+			log.Printf("处理HEVC编码带有hvc1标签但分辨率超标的mkv视频文件:%s\n", src)
 		} else {
 			log.Printf("处理HEVC编码但是不带有hvc1标签的视频文件:%s\n", src)
-			args = append(args, "-map", "0", "-c:v", "copy", "-c:a", "copy", "-c:s", "copy", "-tag:v", "hvc1")
+		}
+		args = append(args, "-map", "0", "-c:v", "copy", "-c:a", "copy", "-c:s", "copy", "-tag:v", "hvc1")
+		if needsResize {
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
 		}
 	} else {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
 		args = append(args, "-map", "0", "-c:v", "libx265", "-c:a", "aac", "-tag:v", "hvc1")
-		if overFHD(vInfo) {
+		if needsResize {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
 		}
 	}
