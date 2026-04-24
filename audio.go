@@ -99,3 +99,59 @@ func audition2ffmpeg(speed string) string {
 	log.Printf("保留两位小数的原始参数:%v\n", final)
 	return final
 }
+
+func Convert2Mp3(src string) {
+	if strings.HasSuffix(src, ".mp3") {
+		log.Printf("文件已经是MP3格式,无需转换:%v\n", src)
+		return
+	}
+	//转换给定的文件为高品质MP3编码的MP3文件（320kbps，人耳无损）
+	mp3 := strings.Replace(src, filepath.Ext(src), ".mp3", 1)
+	var (
+		args []string
+		cmd  *exec.Cmd
+	)
+	args = append(args, "-i", src)
+	args = append(args, "-c:a", "libmp3lame")
+	args = append(args, "-b:a", "320k") // 比特率320kbps，最高音质
+	args = append(args, "-q:a", "0")    // LAME编码器最高质量等级
+	args = append(args, "-ar", "44100") // 采样率44.1kHz（CD音质）
+	args = append(args, mp3)
+	cmd = exec.Command("ffmpeg", args...)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.Fatalf("转换失败：%v\n", err)
+	} else {
+		fmt.Printf("转换成功：%s\n", string(out))
+		if err := os.Remove(src); err != nil {
+			log.Fatalf("删除源文件失败：%v\n", err)
+		}
+	}
+}
+
+func Convert2Aac(src string) {
+	if strings.HasSuffix(src, ".aac") {
+		log.Printf("文件已经是AAC格式,无需转换:%v\n", src)
+		return
+	}
+	//转换给定的文件为高品质AAC编码的M4A文件（256kbps，接近无损）
+	aac := strings.Replace(src, filepath.Ext(src), ".m4a", 1)
+	var (
+		args []string
+		cmd  *exec.Cmd
+	)
+	args = append(args, "-i", src)
+	args = append(args, "-c:a", "aac")             // 使用AAC编码器
+	args = append(args, "-b:a", "256k")            // 比特率256kbps，高品质
+	args = append(args, "-ar", "44100")            // 采样率44.1kHz（CD音质）
+	args = append(args, "-profile:a", "aac_he_v2") // 使用HE-AAC v2配置，更高效率
+	args = append(args, aac)
+	cmd = exec.Command("ffmpeg", args...)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.Fatalf("转换失败：%v\n", err)
+	} else {
+		fmt.Printf("转换成功：%s\n", string(out))
+		if err := os.Remove(src); err != nil {
+			log.Fatalf("删除源文件失败：%v\n", err)
+		}
+	}
+}
