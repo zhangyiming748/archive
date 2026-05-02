@@ -393,3 +393,26 @@ func RotateVideo(src string, direction string) {
 		os.Remove(src)
 	}
 }
+/*
+专门为大疆直接转换tf卡上的视频设计的方法
+*/
+func DjiVideoConvert(src ,dst string) {
+	var (
+		cmd *exec.Cmd
+		args []string
+	)
+	args = append(args, "-i", src)
+	args = append(args, "-c:v", "libx265")
+	args = append(args, "-tag:v", "hvc1")
+	args = append(args, "-c:a", "aac")
+	args = append(args, "-map_chapters", "-1")
+	args = append(args, dst)
+	cmd = exec.Command("ffmpeg", args...)
+	log.Printf("开始执行命令:%s\n", cmd.String())
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
+	} else {
+		log.Printf("转换成功：%s\n", string(out))
+	}
+}
