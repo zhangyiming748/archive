@@ -113,10 +113,10 @@ func Convert2H265(src string, fhd bool) {
 		args = append(args, "-tag:v", "hvc1")
 		args = append(args, "-c:a", "aac")
 		args = append(args, "-preset", "slow")
-		args = append(args, "-crf", "28") // H.265的CRF 28约等于H.264的CRF 23，平衡质量和大小
+		args = append(args, "-crf", "24") // H.265的CRF 24在画质和大小之间取得良好平衡
 		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
 		args = append(args, "-pix_fmt", "yuv420p")
-		args = append(args, "-x265-params", "aq-mode=3:aq-strength=1.0") // 更激进的自适应量化以减小文件大小
+		args = append(args, "-x265-params", "aq-mode=3:aq-strength=1.2:psy-rd=2.0:psy-rdoq=2.0:rdoq-level=1") // 优化的心理视觉参数
 		if needsResize {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
 		}
