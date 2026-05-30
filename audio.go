@@ -4,7 +4,6 @@ package archive
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,12 +31,7 @@ mytype 为音频类型，决定处理方式
 */
 func ConvertAudio(src, mytype string) {
 	// 生成临时文件路径
-	purgePath := filepath.Dir(src)
-	seed := rand.New(rand.NewSource(time.Now().Unix()))
-	b := seed.Intn(2000)
-	tmp := strconv.Itoa(b)
-	tmp = strings.Join([]string{tmp, ".mp3"}, "")
-	dst := filepath.Join(purgePath, tmp)
+	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mp3", 1)
 
 	// 构建ffmpeg命令参数
 	args := []string{"-i", src}

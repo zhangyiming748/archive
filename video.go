@@ -3,7 +3,6 @@ package archive
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -22,12 +21,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	purgePath := filepath.Dir(src)
-	seed := rand.New(rand.NewSource(time.Now().Unix()))
-	b := seed.Intn(2000) + 1000
-	tmp := strconv.Itoa(b)
-	tmp = strings.Join([]string{tmp, ".mkv"}, "")
-	dst := filepath.Join(purgePath, tmp)
+	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mkv", 1)
 
 	log.Printf("处理视频文件:%s\n", src)
 	args = append(args, "-map", "0")
@@ -83,12 +77,8 @@ func Convert2H265(src string, fhd bool) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	purgePath := filepath.Dir(src)
-	seed := rand.New(rand.NewSource(time.Now().Unix()))
-	b := seed.Intn(2000) + 1000
-	tmp := strconv.Itoa(b)
-	tmp = strings.Join([]string{tmp, ".mp4"}, "")
-	dst := filepath.Join(purgePath, tmp)
+	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mp4", 1)
+	dst = strings.Join([]string{dst, ".mp4"}, "")
 
 	// 优先检查分辨率是否需要转换
 	needsResize := fhd && overFHD(vInfo)
@@ -188,12 +178,7 @@ func CloneMkv2H265(src string) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	purgePath := filepath.Dir(src)
-	seed := rand.New(rand.NewSource(time.Now().Unix()))
-	b := seed.Intn(2000) + 1000
-	tmp := strconv.Itoa(b)
-	tmp = strings.Join([]string{tmp, ".mkv"}, "")
-	dst := filepath.Join(purgePath, tmp)
+	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mkv", 1)
 
 	// 优先检查分辨率是否需要转换（MKV默认启用FHD检查）
 	needsResize := overFHD(vInfo)
@@ -393,12 +378,13 @@ func RotateVideo(src string, direction string) {
 		os.Remove(src)
 	}
 }
+
 /*
 专门为大疆直接转换tf卡上的视频设计的方法
 */
-func DjiVideoConvert(src ,dst string) {
+func DjiVideoConvert(src, dst string) {
 	var (
-		cmd *exec.Cmd
+		cmd  *exec.Cmd
 		args []string
 	)
 	args = append(args, "-i", src)
