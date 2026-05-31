@@ -144,6 +144,8 @@ func Convert2H265(src string, fhd bool) {
 func isH265(vInfo FastMediaInfo.Video) bool {
 	if vInfo.Format == "HEVC" {
 		return true
+	} else {
+		log.Printf("视频格式为:%s\n", vInfo.Format)
 	}
 	return false
 
