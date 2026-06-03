@@ -78,7 +78,6 @@ func Convert2H265(src string, fhd bool) {
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
 	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mp4", 1)
-	dst = strings.Join([]string{dst, ".mp4"}, "")
 
 	// 优先检查分辨率是否需要转换
 	needsResize := fhd && overFHD(vInfo)
