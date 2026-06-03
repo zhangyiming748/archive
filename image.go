@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -33,6 +35,12 @@ func Convert2AVIF(src string) error {
 	args = append(args, "--min", "20")
 	args = append(args, "--max", "30")
 	args = append(args, "--speed", "0")
+	// 限制使用一半的CPU线程数
+	halfThreads := runtime.NumCPU() / 2
+	if halfThreads < 1 {
+		halfThreads = 1 // 至少使用1个线程
+	}
+	args = append(args, "--jobs", strconv.Itoa(halfThreads))
 	args = append(args, src)
 	args = append(args, dst)
 	cmd := exec.Command("avifenc", args...)

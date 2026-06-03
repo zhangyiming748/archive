@@ -429,34 +429,34 @@ func DjiVideoConvert(src, dst string) {
 	}
 }
 func hasNvidia() bool {
-	// 检查FFmpeg是否支持NVIDIA NVENC HEVC编码器
+	// 检查FFmpeg是否支持NVIDIA NVENC H.264编码器
 	cmd := exec.Command("ffmpeg", "-encoders")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return false
 	}
-	// 查找hevc_nvenc编码器
-	return strings.Contains(string(output), "hevc_nvenc")
+	// 查找h264_nvenc编码器
+	return strings.Contains(string(output), "h264_nvenc")
 }
 
 func hasIntel() bool {
-	// 检查FFmpeg是否支持Intel QSV HEVC编码器
+	// 检查FFmpeg是否支持Intel QSV H.264编码器
 	cmd := exec.Command("ffmpeg", "-encoders")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return false
 	}
-	// 查找hevc_qsv编码器
-	return strings.Contains(string(output), "hevc_qsv")
+	// 查找h264_qsv编码器
+	return strings.Contains(string(output), "h264_qsv")
 }
 
 func hasAMD() bool {
-	// 检查FFmpeg是否支持AMD VCE HEVC编码器
+	// 检查FFmpeg是否支持AMD VCE H.264编码器
 	cmd := exec.Command("ffmpeg", "-encoders")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return false
 	}
-	// 查找hevc_amf编码器
-	return strings.Contains(string(output), "hevc_amf")
+	// 查找h264_amf编码器
+	return strings.Contains(string(output), "h264_amf")
 }
