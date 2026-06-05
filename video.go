@@ -461,3 +461,25 @@ func hasAMD() bool {
 	// 查找h264_amf编码器
 	return strings.Contains(string(output), "h264_amf")
 }
+
+func mkv2mp4(src string) {
+	var (
+		cmd  *exec.Cmd
+		args []string
+	)
+	args = append(args, "-i", src)
+	args = append(args, "-c:v", "copy")
+	args = append(args, "-c:a", "copy")
+	args = append(args, "-c:s", "copy")
+	args = append(args, "-map_chapters", "-1")
+	args = append(args, strings.Replace(src, filepath.Ext(src), ".mp4", 1))
+	cmd = exec.Command("ffmpeg", args...)
+	log.Printf("开始执行命令:%s\n", cmd.String())
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
+	} else {
+		log.Printf("转换成功：%s\n", string(out))
+		os.Remove(src)
+	}
+}
