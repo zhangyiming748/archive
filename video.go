@@ -67,7 +67,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 /*
 最终转换视频文件为带hvc1标签的MP4文件
 */
-func Convert2H265(src string, fhd bool) {
+func Convert2H265(src string, fhd,force bool) {
 	if strings.ToLower(filepath.Ext(src)) == ".mkv" {
 		log.Printf("检测到mkv文件:%s,使用mkv逻辑单独处理", src)
 		CloneMkv2H265(src)
@@ -111,6 +111,10 @@ func Convert2H265(src string, fhd bool) {
 		}
 	}
 	args = append(args, "-map_chapters", "-1")
+	if force {
+		args = append(args, "-y")
+		log.Printf("强制覆盖输出文件:%s\n", dst)
+	}
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
