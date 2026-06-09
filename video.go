@@ -67,7 +67,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 /*
 最终转换视频文件为带hvc1标签的MP4文件
 */
-func Convert2H265(src string, fhd,force bool) {
+func Convert2H265(src string, fhd, force bool) {
 	if strings.ToLower(filepath.Ext(src)) == ".mkv" {
 		log.Printf("检测到mkv文件:%s,使用mkv逻辑单独处理", src)
 		CloneMkv2H265(src)
@@ -117,13 +117,17 @@ func Convert2H265(src string, fhd,force bool) {
 	}
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
-	log.Printf("开始执行命令:%s\n", cmd.String())
-	out, err := cmd.CombinedOutput()
+	frame, err := getFrame(vInfo)
 	if err != nil {
-		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
+		log.Printf("获取帧数失败：%v，将使用普通执行方式\n", err)
+	}
+
+	// 直接使用 ExecCommandWithBar，它会在帧数无效时自动降级为普通执行
+	if err := util.ExecCommandWithBar(cmd, frame); err != nil {
+		log.Printf("转换失败：%v\n", err)
 		return
 	}
-	fmt.Printf("转换成功：%s\n", string(out))
+	log.Printf("转换成功")
 
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
@@ -168,7 +172,10 @@ func overFHD(vInfo FastMediaInfo.Video) bool {
 		return true
 	}
 	return false
+}
 
+func getFrame(vInfo FastMediaInfo.Video) (int, error) {
+	return strconv.Atoi(vInfo.FrameCount)
 }
 
 /*
