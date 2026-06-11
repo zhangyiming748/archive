@@ -164,14 +164,28 @@ func hasTag(vInfo FastMediaInfo.Video) bool {
 	return false
 
 }
+
 func overFHD(vInfo FastMediaInfo.Video) bool {
-	height, _ := strconv.Atoi(vInfo.Height)
-	width, _ := strconv.Atoi(vInfo.Width)
-	if height > 1920 || width > 1920 {
-		log.Printf("高度为%s,宽度为%s\n", vInfo.Height, vInfo.Width)
-		return true
-	}
-	return false
+    height, err := strconv.Atoi(vInfo.Height)
+    if err != nil {
+        return false
+    }
+    width, err := strconv.Atoi(vInfo.Width)
+    if err != nil {
+        return false
+    }
+    
+    // 检查宽高是否能被2整除
+    if height%2 != 0 || width%2 != 0 {
+        log.Printf("高度%s或宽度%s不能被2整除\n", vInfo.Height, vInfo.Width)
+        return false
+    }
+    
+    if height > 1920 || width > 1920 {
+        log.Printf("高度为%s,宽度为%s\n", vInfo.Height, vInfo.Width)
+        return true
+    }
+    return false
 }
 
 func getFrame(vInfo FastMediaInfo.Video) (int, error) {
