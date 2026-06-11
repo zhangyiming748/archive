@@ -31,7 +31,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 	args = append(args, "-c:s", "copy")
 	if fhd {
 		if overFHD(vInfo) {
-			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	}
 	args = append(args, dst)
@@ -94,7 +94,7 @@ func Convert2H265(src string, fhd, force bool) {
 		}
 		args = append(args, "-c:v", "copy", "-c:a", "copy", "-tag:v", "hvc1")
 		if needsResize {
-			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	} else {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
@@ -107,7 +107,7 @@ func Convert2H265(src string, fhd, force bool) {
 		args = append(args, "-pix_fmt", "yuv420p")
 		args = append(args, "-x265-params", "aq-mode=3:aq-strength=1.2:psy-rd=2.0:psy-rdoq=2.0:rdoq-level=1") // 优化的心理视觉参数
 		if needsResize {
-			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	}
 	args = append(args, "-map_chapters", "-1")
@@ -166,26 +166,20 @@ func hasTag(vInfo FastMediaInfo.Video) bool {
 }
 
 func overFHD(vInfo FastMediaInfo.Video) bool {
-    height, err := strconv.Atoi(vInfo.Height)
-    if err != nil {
-        return false
-    }
-    width, err := strconv.Atoi(vInfo.Width)
-    if err != nil {
-        return false
-    }
-    
-    // 检查宽高是否能被2整除
-    if height%2 != 0 || width%2 != 0 {
-        log.Printf("高度%s或宽度%s不能被2整除\n", vInfo.Height, vInfo.Width)
-        return false
-    }
-    
-    if height > 1920 || width > 1920 {
-        log.Printf("高度为%s,宽度为%s\n", vInfo.Height, vInfo.Width)
-        return true
-    }
-    return false
+	height, err := strconv.Atoi(vInfo.Height)
+	if err != nil {
+		return false
+	}
+	width, err := strconv.Atoi(vInfo.Width)
+	if err != nil {
+		return false
+	}
+
+	if height > 1920 || width > 1920 {
+		log.Printf("高度为%s,宽度为%s\n", vInfo.Height, vInfo.Width)
+		return true
+	}
+	return false
 }
 
 func getFrame(vInfo FastMediaInfo.Video) (int, error) {
@@ -221,13 +215,13 @@ func CloneMkv2H265(src string) {
 		}
 		args = append(args, "-map", "0", "-c:v", "copy", "-c:a", "copy", "-c:s", "copy", "-tag:v", "hvc1")
 		if needsResize {
-			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	} else {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
 		args = append(args, "-map", "0", "-c:v", "libx265", "-c:a", "aac", "-tag:v", "hvc1")
 		if needsResize {
-			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw)")
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	}
 	args = append(args, "-c:a", "aac")
