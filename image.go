@@ -14,7 +14,10 @@ import (
 /*
 最终转换图片为 avif格式
 */
-func Convert2AVIF(src string) error {
+func Convert2AVIF(src string,threads int) error {
+	if threads ==0 {
+		threads = runtime.NumCPU()
+	}
 	dst := strings.Replace(src, filepath.Ext(src), ".avif", 1)
 	if strings.ToLower(filepath.Ext(src)) == ".gif" {
 		log.Printf("跳过gif文件:%v\n", src)
@@ -35,12 +38,7 @@ func Convert2AVIF(src string) error {
 	args = append(args, "--min", "20")
 	args = append(args, "--max", "30")
 	args = append(args, "--speed", "0")
-	// 限制使用一半的CPU线程数
-	halfThreads := runtime.NumCPU() / 2
-	if halfThreads < 1 {
-		halfThreads = 1 // 至少使用1个线程
-	}
-	args = append(args, "--jobs", strconv.Itoa(halfThreads))
+	args = append(args, "--jobs", strconv.Itoa(threads))
 	args = append(args, src)
 	args = append(args, dst)
 	cmd := exec.Command("avifenc", args...)
