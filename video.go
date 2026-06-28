@@ -256,6 +256,90 @@ func hasTag(vInfo FastMediaInfo.Video) bool {
 
 }
 
+/*
+最终转换视频文件为带hvc1标签的MP4文件
+*/
+func Convert2SmallerH265MP4(src string, fhd, force bool) {
+	mi := FastMediaInfo.GetStandMediaInfo(src)
+	vInfo := mi.Video
+	var cmd *exec.Cmd
+	args := []string{"-i", src}
+	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mp4", 1)
+
+	// 优先检查分辨率是否需要转换
+	needsResize := fhd && overFHD(vInfo)
+
+	if isH265(vInfo) && filepath.Ext(src) == ".mp4" {
+		if hasTag(vInfo) && !needsResize {
+			log.Printf("跳过已经是h265编码并且带有hvc1标签且分辨率符合要求的视频文件:%s\n", src)
+			return
+		}
+		if needsResize {
+			log.Printf("处理HEVC编码带有hvc1标签但分辨率超标的视频文件:%s\n", src)
+		} else {
+			log.Printf("处理HEVC编码但是不带有hvc1标签的视频文件:%s\n", src)
+		}
+		args = append(args, "-c:v", "copy", "-c:a", "copy", "-tag:v", "hvc1")
+		if needsResize {
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
+		}
+	} else {
+		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
+		args = append(args, "-c:v", "libx265")
+		args = append(args, "-tag:v", "hvc1")
+		args = append(args, "-c:a", "aac")
+		args = append(args, "-preset", "fast")
+		args = append(args, "-crf", "28") // H.265的CRF 24在画质和大小之间取得良好平衡
+		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
+		args = append(args, "-pix_fmt", "yuv420p")
+		if needsResize {
+			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
+		}
+	}
+	args = append(args, "-map_chapters", "-1")
+	if force {
+		args = append(args, "-y")
+		log.Printf("强制覆盖输出文件:%s\n", dst)
+	}
+	args = append(args, dst)
+	cmd = exec.Command("ffmpeg", args...)
+
+	// 打印视频信息用于调试
+	log.Printf("视频信息 - 格式:%s, 编码:%s, 分辨率:%sx%s, 帧率:%s, 帧数:%s\n",
+		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
+
+	frame, err := getFrame(vInfo)
+	if err != nil {
+		log.Printf("获取帧数失败：%v，将使用普通执行方式\n", err)
+	}
+
+	// 直接使用 ExecCommandWithBar，它会在帧数无效时自动降级为普通执行
+	if err := util.ExecCommandWithBar(cmd, frame); err != nil {
+		log.Printf("转换失败：%v\n", err)
+		return
+	}
+	log.Printf("转换成功")
+
+	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
+	diffSize(src, dst)
+	// 先尝试删除源文件
+	if err := os.Remove(src); err != nil {
+		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
+		//尝试重命名源文件，添加 should_be_deleted
+		nName := strings.Replace(src, filepath.Ext(src), ".should_be_deleted", 1)
+		if err := os.Rename(src, nName); err != nil {
+			log.Fatalf("重命名文件失败：%v\n", err)
+		}
+	}
+	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
+	time.Sleep(100 * time.Millisecond)
+	// 尝试重命名
+	src = strings.Replace(src, filepath.Ext(src), ".mp4", 1)
+	if err := os.Rename(dst, src); err != nil {
+		log.Fatalf("重命名文件失败：%v\n", err)
+	}
+}
+
 func overFHD(vInfo FastMediaInfo.Video) bool {
 	height, err := strconv.Atoi(vInfo.Height)
 	if err != nil {
