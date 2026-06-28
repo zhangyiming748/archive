@@ -89,6 +89,8 @@ func ExecCommandWithBar(c *exec.Cmd, totalFrame int) (e error) {
 		log.Printf("总帧数为%d，无法显示进度条，使用普通执行方式\n", total)
 		return ExecuteCommandWithRealtimeOutput(c)
 	}
+	log.Printf("总帧数为: %d，开始创建进度条\n", total)
+
 	bar := progressbar.NewOptions(total,
 		progressbar.OptionSetDescription("处理进度"),
 		progressbar.OptionSetWriter(os.Stderr),
@@ -99,6 +101,22 @@ func ExecCommandWithBar(c *exec.Cmd, totalFrame int) (e error) {
 		progressbar.OptionThrottle(65*time.Millisecond),
 	)
 	defer bar.Finish()
+
+	// 启动一个后台 goroutine 定期刷新进度条
+	stopRefresh := make(chan bool)
+	go func() {
+		ticker := time.NewTicker(500 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-stopRefresh:
+				return
+			case <-ticker.C:
+				bar.RenderBlank()
+			}
+		}
+	}()
+	defer close(stopRefresh)
 
 	// 获取命令的标准错误管道（ffmpeg的进度信息输出到stderr）
 	stderr, err := c.StderrPipe()
@@ -114,10 +132,13 @@ func ExecCommandWithBar(c *exec.Cmd, totalFrame int) (e error) {
 		log.Printf("启动cmd命令产生错误:%v\n", err)
 		return err
 	}
+	log.Printf("命令已启动，开始读取输出...\n")
 
 	// 使用缓冲区累积读取输出，避免截断帧数信息
 	buf := make([]byte, 4096)
 	var leftover string
+	lineCount := 0
+	frameFoundCount := 0
 
 	// 循环读取输出并更新进度条
 	for {
@@ -125,9 +146,11 @@ func ExecCommandWithBar(c *exec.Cmd, totalFrame int) (e error) {
 		if n > 0 {
 			// 将新读取的数据与之前的剩余数据合并
 			output := leftover + string(buf[:n])
+			log.Printf("[调试] 读取到 %d 字节数据\n", n)
 
 			// 按行分割处理
 			lines := strings.Split(output, "\n")
+			log.Printf("[调试] 分割为 %d 行\n", len(lines))
 
 			// 最后一行可能不完整，留到下次处理
 			leftover = lines[len(lines)-1]
@@ -135,17 +158,30 @@ func ExecCommandWithBar(c *exec.Cmd, totalFrame int) (e error) {
 			// 处理完整的行
 			for i := 0; i < len(lines)-1; i++ {
 				line := lines[i]
+				lineCount++
 				// 清理输出中的空字符
 				line = strings.Replace(line, "\u0000", "", -1)
 
+				// 调试：打印前20行和所有包含frame的行
+				if lineCount <= 20 || strings.Contains(strings.ToLower(line), "frame") {
+					log.Printf("[调试#%d] %s\n", lineCount, line)
+				}
+
 				// 从输出中提取当前帧数并更新进度条
 				if frame, err := GetFrameNum(line); err == nil {
+					frameFoundCount++
+					log.Printf("[帧数匹配] 第%d次匹配到帧数: %d (总帧数: %d, 进度: %.2f%%)\n", frameFoundCount, frame, total, float64(frame)/float64(total)*100)
 					bar.Set(frame)
+					// 强制刷新进度条显示
+					bar.RenderBlank()
 				}
 			}
+		} else {
+			log.Printf("[调试] 读取到 0 字节，错误: %v\n", e)
 		}
 
 		if e != nil {
+			log.Printf("读取stderr结束: %v, 共读取%d行，匹配到%d次帧数\n", e, lineCount, frameFoundCount)
 			break
 		}
 	}
