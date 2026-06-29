@@ -44,6 +44,9 @@ func ConvertMKV2H265(src string, fhd bool) {
 	}
 	fmt.Printf("转换成功：%s\n", string(out))
 
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(dst)
+
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
 	// 先尝试删除源文件
@@ -134,6 +137,9 @@ func Convert2H265(src string, fhd, force bool) {
 	}
 	log.Printf("转换成功")
 
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(dst)
+
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
 	// 先尝试删除源文件
@@ -218,6 +224,9 @@ func Convert2H265MP4(src string, fhd, force bool) {
 		return
 	}
 	log.Printf("转换成功")
+
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(dst)
 
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
@@ -320,6 +329,9 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	}
 	log.Printf("转换成功")
 
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(dst)
+
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
 	// 先尝试删除源文件
@@ -366,6 +378,20 @@ func getFrame(vInfo FastMediaInfo.Video) (int, error) {
 		return 0, fmt.Errorf("无法将FrameCount '%s' 转换为整数: %v", vInfo.FrameCount, err)
 	}
 	return frame, nil
+}
+
+// checkOutputFileValid 检查输出文件是否有效（非0字节）
+// 如果文件大小为0，说明FFmpeg实际执行失败但未返回错误码
+func checkOutputFileValid(dst string) {
+	dstInfo, err := os.Stat(dst)
+	if err != nil {
+		log.Fatalf("无法获取目标文件信息：%v\n", err)
+	}
+	if dstInfo.Size() == 0 {
+		log.Printf("错误：转换后的文件大小为0字节，说明FFmpeg执行失败但未返回错误码\n")
+		log.Printf("目标文件: %s\n", dst)
+		panic(fmt.Sprintf("FFmpeg转换失败：输出文件 %s 大小为0字节", dst))
+	}
 }
 
 /*
@@ -418,6 +444,9 @@ func CloneMkv2H265(src string) {
 		fmt.Printf("转换成功：%s\n", string(out))
 	}
 
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(dst)
+
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
 	// 先尝试删除源文件
@@ -459,6 +488,8 @@ func FastConvertVideo2StandAvc(src string) {
 		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
 	} else {
 		log.Printf("转换成功：%s\n", string(out))
+		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+		checkOutputFileValid(tmp_name)
 		err := os.Remove(src)
 		if err != nil {
 			log.Fatalf("删除源文件失败：%v\n", err)
@@ -488,6 +519,8 @@ func FastConvertMkv(src string) {
 		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
 	} else {
 		log.Printf("转换成功：%s\n", string(out))
+		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+		checkOutputFileValid(mp4)
 		err := os.Remove(src)
 		if err != nil {
 			log.Fatalf("删除源文件失败：%v\n", err)
@@ -511,6 +544,8 @@ func MergeMp4WithSameNameSrt(video, srt string) error {
 		log.Printf("内嵌字幕失败：%v\n输出内容%s\n", err, string(b))
 	} else {
 		log.Printf("内嵌字幕成功：%s\n", string(b))
+		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+		checkOutputFileValid(output)
 	}
 	return err
 }
@@ -574,6 +609,8 @@ func RotateVideo(src string, direction string) {
 		log.Printf("旋转失败：%v\n输出内容%s\n", err, string(out))
 	} else {
 		log.Printf("旋转成功：%s\n", string(out))
+		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+		checkOutputFileValid(tmp_name)
 		/*
 			1. 删除旧文件
 			2. 临时文件改为旧文件的文件名
@@ -595,7 +632,8 @@ func RotateVideo(src string, direction string) {
 	args := []string{"-i", src}
 	args = append(args, "-c:a", "aac")
 	args = append(args, "-vn")
-	args = append(args, strings.Replace(src, filepath.Ext(src), ".aac", 1))
+	aacFile := strings.Replace(src, filepath.Ext(src), ".aac", 1)
+	args = append(args, aacFile)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	err := util.ExecuteCommandWithRealtimeOutput(cmd)
@@ -603,6 +641,8 @@ func RotateVideo(src string, direction string) {
 		log.Printf("提取音频失败：%v\n", err)
 	} else {
 		log.Printf("提取音频成功：\n")
+		// 检查提取的音频文件是否为0字节
+		checkOutputFileValid(aacFile)
 		os.Remove(src)
 	}
 }
@@ -628,6 +668,8 @@ func DjiVideoConvert(src, dst string) {
 		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
 	} else {
 		log.Printf("转换成功：%s\n", string(out))
+		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+		checkOutputFileValid(dst)
 	}
 }
 func hasNvidia() bool {
