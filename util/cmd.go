@@ -102,30 +102,21 @@ func ExecCommandWithBar(c *exec.Cmd, totalFrame int) (e error) {
 	)
 	defer bar.Finish()
 
-	// 启动一个后台 goroutine 定期刷新进度条
-	stopRefresh := make(chan bool)
-	go func() {
-		ticker := time.NewTicker(500 * time.Millisecond)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-stopRefresh:
-				return
-			case <-ticker.C:
-				bar.RenderBlank()
-			}
-		}
-	}()
-	defer close(stopRefresh)
-
-	// 获取命令的标准错误管道（ffmpeg的进度信息输出到stderr）
+	// 获取命令的标准输出和标准错误管道
+	stdout, err := c.StdoutPipe()
+	if err != nil {
+		log.Printf("连接Stdout产生错误:%v\n", err)
+		return err
+	}
 	stderr, err := c.StderrPipe()
 	if err != nil {
 		log.Printf("连接Stderr产生错误:%v\n", err)
 		return err
 	}
-	// 将标准输出重定向到当前进程输出
-	c.Stdout = os.Stdout
+
+	// 用于捕获所有输出内容
+	var stdoutBuffer strings.Builder
+	var stderrBuffer strings.Builder
 
 	// 启动命令
 	if err = c.Start(); err != nil {
@@ -134,23 +125,41 @@ func ExecCommandWithBar(c *exec.Cmd, totalFrame int) (e error) {
 	}
 	log.Printf("命令已启动，开始读取输出...\n")
 
+	// 启动 goroutine 读取 stdout
+	doneStdout := make(chan bool)
+	go func() {
+		buf := make([]byte, 4096)
+		for {
+			n, e := stdout.Read(buf)
+			if n > 0 {
+				stdoutBuffer.Write(buf[:n])
+				os.Stdout.Write(buf[:n]) // 同时输出到控制台
+			}
+			if e != nil {
+				break
+			}
+		}
+		doneStdout <- true
+	}()
+
 	// 使用缓冲区累积读取输出，避免截断帧数信息
 	buf := make([]byte, 4096)
 	var leftover string
 	lineCount := 0
 	frameFoundCount := 0
 
-	// 循环读取输出并更新进度条
+	// 循环读取 stderr 输出并更新进度条
 	for {
 		n, e := stderr.Read(buf)
 		if n > 0 {
+			// 保存到缓冲区
+			stderrBuffer.Write(buf[:n])
+
 			// 将新读取的数据与之前的剩余数据合并
 			output := leftover + string(buf[:n])
-			log.Printf("[调试] 读取到 %d 字节数据\n", n)
 
 			// 按行分割处理
 			lines := strings.Split(output, "\n")
-			log.Printf("[调试] 分割为 %d 行\n", len(lines))
 
 			// 最后一行可能不完整，留到下次处理
 			leftover = lines[len(lines)-1]
@@ -186,13 +195,60 @@ func ExecCommandWithBar(c *exec.Cmd, totalFrame int) (e error) {
 		}
 	}
 
+	// 等待 stdout 读取完成
+	<-doneStdout
+
 	// 等待命令执行完成
-	if err = c.Wait(); err != nil {
-		log.Printf("命令执行中产生错误:%v\n", err)
-		return err
+	waitErr := c.Wait()
+	if waitErr != nil {
+		log.Printf("命令执行中产生错误:%v\n", waitErr)
 	}
 	bar.Finish()
+
+	// 等待一小段时间，确保文件完全写入磁盘
+	time.Sleep(200 * time.Millisecond)
+
+	// 检查输出文件是否为0字节（通过命令参数获取输出文件路径）
+	if len(c.Args) > 0 {
+		outputFile := c.Args[len(c.Args)-1]
+
+		// 多次检查文件大小，避免因文件系统延迟导致的误判
+		var fileSize int64 = -1
+		for i := 0; i < 3; i++ {
+			if fileInfo, statErr := os.Stat(outputFile); statErr == nil {
+				fileSize = fileInfo.Size()
+				log.Printf("[文件检查] 第%d次检查，文件大小: %d 字节\n", i+1, fileSize)
+				if fileSize > 0 {
+					break // 文件正常，退出检查循环
+				}
+				if i < 2 {
+					log.Printf("[文件检查] 文件大小为0，等待500ms后重试...\n")
+					time.Sleep(500 * time.Millisecond)
+				}
+			} else {
+				log.Printf("[文件检查] 无法获取文件信息: %v\n", statErr)
+				break
+			}
+		}
+
+		if fileSize == 0 {
+			log.Printf("\n========== FFmpeg 执行失败检测 ==========\n")
+			log.Printf("错误：输出文件大小为0字节，说明FFmpeg实际执行失败\n")
+			log.Printf("命令: %s\n", c.String())
+			log.Printf("输出文件: %s\n", outputFile)
+			log.Printf("文件大小: 0 字节\n")
+			log.Printf("Wait() 返回错误: %v\n", waitErr)
+			log.Printf("\n--- 标准输出 (stdout) ---\n%s\n", stdoutBuffer.String())
+			log.Printf("\n--- 标准错误 (stderr) ---\n%s\n", stderrBuffer.String())
+			log.Printf("=========================================\n")
+			panic(fmt.Sprintf("FFmpeg转换失败：输出文件 %s 大小为0字节", outputFile))
+		}
+	}
+
 	log.Printf("命令结束:%v\n", c.String())
+	if waitErr != nil {
+		return waitErr
+	}
 	return nil
 }
 
