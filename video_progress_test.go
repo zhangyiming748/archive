@@ -46,10 +46,7 @@ func TestExecCommandWithBar(t *testing.T) {
 	t.Log("请观察下方的进度条和预估时间")
 	t.Log("================================================")
 
-	// 总帧数 = 5秒 * 30fps = 150帧
-	totalFrames := 150
-
-	err := util.ExecCommandWithBar(cmd, totalFrames)
+	err := util.ExecuteCommandWithRealtimeOutput(cmd)
 	if err != nil {
 		t.Errorf("转换失败: %v", err)
 	}

@@ -128,14 +128,15 @@ func Convert2H265(src string, fhd, force bool) {
 	frame, err := getFrame(vInfo)
 	if err != nil {
 		log.Printf("获取帧数失败：%v，将使用普通执行方式\n", err)
+	}else{
+		log.Printf("获取帧数成功：%d，将使用带进度条执行方式\n", frame)
 	}
 
-	// 直接使用 ExecCommandWithBar，它会在帧数无效时自动降级为普通执行
-	if err := util.ExecCommandWithBar(cmd, frame); err != nil {
+	// 直接使用 ExecuteCommandWithRealtimeOutput 执行命令
+	if err := util.ExecuteCommandWithRealtimeOutput(cmd); err != nil {
 		log.Printf("转换失败：%v\n", err)
 		return
 	}
-	log.Printf("转换成功")
 
 	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
@@ -213,17 +214,11 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	log.Printf("视频信息 - 格式:%s, 编码:%s, 分辨率:%sx%s, 帧率:%s, 帧数:%s\n",
 		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
 
-	frame, err := getFrame(vInfo)
-	if err != nil {
-		log.Printf("获取帧数失败：%v，将使用普通执行方式\n", err)
-	}
-
-	// 直接使用 ExecCommandWithBar，它会在帧数无效时自动降级为普通执行
-	if err := util.ExecCommandWithBar(cmd, frame); err != nil {
+	// 直接使用 ExecuteCommandWithRealtimeOutput 执行命令
+	if err := util.ExecuteCommandWithRealtimeOutput(cmd); err != nil {
 		log.Printf("转换失败：%v\n", err)
 		return
 	}
-	log.Printf("转换成功")
 
 	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
@@ -317,17 +312,11 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	log.Printf("视频信息 - 格式:%s, 编码:%s, 分辨率:%sx%s, 帧率:%s, 帧数:%s\n",
 		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
 
-	frame, err := getFrame(vInfo)
-	if err != nil {
-		log.Printf("获取帧数失败：%v，将使用普通执行方式\n", err)
-	}
-
-	// 直接使用 ExecCommandWithBar，它会在帧数无效时自动降级为普通执行
-	if err := util.ExecCommandWithBar(cmd, frame); err != nil {
+	// 直接使用 ExecuteCommandWithRealtimeOutput 执行命令
+	if err := util.ExecuteCommandWithRealtimeOutput(cmd); err != nil {
 		log.Printf("转换失败：%v\n", err)
 		return
 	}
-	log.Printf("转换成功")
 
 	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
