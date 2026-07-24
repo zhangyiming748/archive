@@ -38,7 +38,8 @@ func ConvertAudio(src, mytype string) {
 	ff := audition2ffmpeg("65")
 	atempo := strings.Join([]string{"atempo", ff}, "=")
 	volume := strings.Join([]string{"volume", Volume}, "=")
-	filter := strings.Join([]string{atempo, volume}, ",")
+	// 将 atempo 和 volume 组合成滤镜链
+	filterChain := strings.Join([]string{atempo, volume}, ",")
 
 	args = append(args, "-ac", "1")
 	args = append(args, "-map_metadata", "-1")
@@ -48,9 +49,9 @@ func ConvertAudio(src, mytype string) {
 	switch mytype {
 	case AudioBookType:
 		// 有声书加速65% 电平增加
-		args = append(args, "-filter:a", filter)
-	// 歌曲类只增加电平
+		args = append(args, "-filter:a", filterChain)
 	case RapMusicType:
+		// 歌曲类只增加电平
 		args = append(args, "-filter:a", volume)
 	default:
 		// 其他类型
@@ -58,7 +59,7 @@ func ConvertAudio(src, mytype string) {
 	}
 	args = append(args, dst)
 	cmd := exec.Command("ffmpeg", args...)
-
+	log.Printf("准备执行命令:%s\n", cmd.String())
 	// 获取输出和错误管道
 
 	// 等待命令完成并处理结果
