@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/zhangyiming748/FastMediaInfo"
-	"github.com/zhangyiming748/archive/util"
+	"github.com/zhangyiming748/stand"
 )
 
 // 转换mkv文件为h265格式,但保留全部的音频轨、字幕轨
@@ -37,16 +37,14 @@ func ConvertMKV2H265(src string, fhd bool) {
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
-	out, err := cmd.CombinedOutput()
+	err := stand.ExecCommandWithBar(cmd, src)
 	if err != nil {
-		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
+		log.Printf("转换失败：%v\n", err)
 		return
 	}
-	fmt.Printf("转换成功：%s\n", string(out))
 
 	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
-
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
 	// 先尝试删除源文件
@@ -125,15 +123,8 @@ func Convert2H265(src string, fhd, force bool) {
 	log.Printf("视频信息 - 格式:%s, 编码:%s, 分辨率:%sx%s, 帧率:%s, 帧数:%s\n",
 		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
 
-	frame, err := getFrame(vInfo)
-	if err != nil {
-		log.Printf("获取帧数失败：%v，将使用普通执行方式\n", err)
-	}else{
-		log.Printf("获取帧数成功：%d，将使用带进度条执行方式\n", frame)
-	}
-
-	// 直接使用 ExecuteCommandWithRealtimeOutput 执行命令
-	if err := util.ExecuteCommandWithRealtimeOutput(cmd); err != nil {
+	// 直接使用 ExecCommandWithBar 执行命令
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
 		log.Printf("转换失败：%v\n", err)
 		return
 	}
@@ -214,8 +205,7 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	log.Printf("视频信息 - 格式:%s, 编码:%s, 分辨率:%sx%s, 帧率:%s, 帧数:%s\n",
 		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
 
-	// 直接使用 ExecuteCommandWithRealtimeOutput 执行命令
-	if err := util.ExecuteCommandWithRealtimeOutput(cmd); err != nil {
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
 		log.Printf("转换失败：%v\n", err)
 		return
 	}
@@ -312,8 +302,7 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	log.Printf("视频信息 - 格式:%s, 编码:%s, 分辨率:%sx%s, 帧率:%s, 帧数:%s\n",
 		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
 
-	// 直接使用 ExecuteCommandWithRealtimeOutput 执行命令
-	if err := util.ExecuteCommandWithRealtimeOutput(cmd); err != nil {
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
 		log.Printf("转换失败：%v\n", err)
 		return
 	}
@@ -426,11 +415,9 @@ func CloneMkv2H265(src string) {
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
-	if out, err := cmd.CombinedOutput(); err != nil {
-		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
+		log.Printf("转换失败：%v\n", err)
 		return
-	} else {
-		fmt.Printf("转换成功：%s\n", string(out))
 	}
 
 	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
@@ -472,17 +459,14 @@ func FastConvertVideo2StandAvc(src string) {
 	tmp_name := strings.Replace(src, filepath.Ext(src), "_fast.mp4", 1)
 	cmd := exec.Command("ffmpeg", "-i", src, "-c:v", "libx264", "-c:a", "aac", "-map_chapters", "-1", tmp_name)
 	log.Printf("开始执行命令:%s\n", cmd.String())
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
-	} else {
-		log.Printf("转换成功：%s\n", string(out))
-		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
-		checkOutputFileValid(tmp_name)
-		err := os.Remove(src)
-		if err != nil {
-			log.Fatalf("删除源文件失败：%v\n", err)
-		}
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
+		log.Printf("转换失败：%v\n", err)
+		return
+	}
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(tmp_name)
+	if err := os.Remove(src); err != nil {
+		log.Fatalf("删除源文件失败：%v\n", err)
 	}
 }
 
@@ -503,17 +487,14 @@ func FastConvertMkv(src string) {
 	args = append(args, mp4)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
-	} else {
-		log.Printf("转换成功：%s\n", string(out))
-		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
-		checkOutputFileValid(mp4)
-		err := os.Remove(src)
-		if err != nil {
-			log.Fatalf("删除源文件失败：%v\n", err)
-		}
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
+		log.Printf("转换失败：%v\n", err)
+		return
+	}
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(mp4)
+	if err := os.Remove(src); err != nil {
+		log.Fatalf("删除源文件失败：%v\n", err)
 	}
 }
 func MergeMp4WithSameNameSrt(video, srt string) error {
@@ -528,15 +509,13 @@ func MergeMp4WithSameNameSrt(video, srt string) error {
 	args = append(args, output)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("当前生成的内嵌字幕的命令是:%v\n", cmd.String())
-	b, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("内嵌字幕失败：%v\n输出内容%s\n", err, string(b))
-	} else {
-		log.Printf("内嵌字幕成功：%s\n", string(b))
-		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
-		checkOutputFileValid(output)
+	if err := stand.ExecCommandWithBar(cmd, video); err != nil {
+		log.Printf("内嵌字幕失败：%v\n", err)
+		return err
 	}
-	return err
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(output)
+	return nil
 }
 
 const (
@@ -593,23 +572,21 @@ func RotateVideo(src string, direction string) {
 	args = append(args, tmp_name)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("旋转失败：%v\n输出内容%s\n", err, string(out))
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
+		log.Printf("旋转失败：%v\n", err)
+		return
+	}
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(tmp_name)
+	/*
+		1. 删除旧文件
+		2. 临时文件改为旧文件的文件名
+	*/
+	if err := os.Remove(src); err != nil {
+		log.Printf("删除源文件失败：%v\n", err)
 	} else {
-		log.Printf("旋转成功：%s\n", string(out))
-		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
-		checkOutputFileValid(tmp_name)
-		/*
-			1. 删除旧文件
-			2. 临时文件改为旧文件的文件名
-		*/
-		if err := os.Remove(src); err != nil {
-			log.Printf("删除源文件失败：%v\n", err)
-		} else {
-			if err := os.Rename(tmp_name, strings.Replace(src, filepath.Ext(src), ".mp4", 1)); err != nil {
-				log.Printf("重命名文件失败：%v\n", err)
-			}
+		if err := os.Rename(tmp_name, strings.Replace(src, filepath.Ext(src), ".mp4", 1)); err != nil {
+			log.Printf("重命名文件失败：%v\n", err)
 		}
 	}
 }
@@ -625,15 +602,13 @@ func RotateVideo(src string, direction string) {
 	args = append(args, aacFile)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
-	err := util.ExecuteCommandWithRealtimeOutput(cmd)
-	if err != nil {
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
 		log.Printf("提取音频失败：%v\n", err)
-	} else {
-		log.Printf("提取音频成功：\n")
-		// 检查提取的音频文件是否为0字节
-		checkOutputFileValid(aacFile)
-		os.Remove(src)
+		return
 	}
+	// 检查提取的音频文件是否为0字节
+	checkOutputFileValid(aacFile)
+	os.Remove(src)
 }
 
 /*
@@ -652,14 +627,12 @@ func DjiVideoConvert(src, dst string) {
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
-	} else {
-		log.Printf("转换成功：%s\n", string(out))
-		// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
-		checkOutputFileValid(dst)
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
+		log.Printf("转换失败：%v\n", err)
+		return
 	}
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(dst)
 }
 func hasNvidia() bool {
 	// 检查FFmpeg是否支持NVIDIA NVENC H.264编码器
@@ -707,11 +680,9 @@ func mkv2mp4(src string) {
 	args = append(args, strings.Replace(src, filepath.Ext(src), ".mp4", 1))
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("转换失败：%v\n输出内容%s\n", err, string(out))
-	} else {
-		log.Printf("转换成功：%s\n", string(out))
-		os.Remove(src)
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
+		log.Printf("转换失败：%v\n", err)
+		return
 	}
+	os.Remove(src)
 }
