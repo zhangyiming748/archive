@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // 音频处理相关的常量定义
@@ -31,7 +30,7 @@ mytype 为音频类型，决定处理方式
 */
 func ConvertAudio(src, mytype string) {
 	// 生成临时文件路径
-	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mp3", 1)
+	dst := strings.Replace(src, filepath.Ext(src), ".opus", 1)
 
 	// 构建ffmpeg命令参数
 	args := []string{"-i", src}
@@ -40,11 +39,11 @@ func ConvertAudio(src, mytype string) {
 	volume := strings.Join([]string{"volume", Volume}, "=")
 	// 将 atempo 和 volume 组合成滤镜链
 	filterChain := strings.Join([]string{atempo, volume}, ",")
-
-	args = append(args, "-ac", "1")
+//ffmpeg -i input.mp3 -c:a libopus -b:a 160k -application audio output.opus
+	args = append(args, "-c:a", "libopus")
 	args = append(args, "-map_metadata", "-1")
-	args = append(args, "-ar", "44100")
-	args = append(args, "-ab", "128k")
+	args = append(args, "-b:a", "160k")
+	args = append(args, "-application","audio")
 	// 根据音频类型设置不同的处理参数
 	switch mytype {
 	case AudioBookType:
@@ -55,7 +54,7 @@ func ConvertAudio(src, mytype string) {
 		args = append(args, "-filter:a", volume)
 	default:
 		// 其他类型
-		args = append(args, "-c:a", "aac")
+		return
 	}
 	args = append(args, dst)
 	cmd := exec.Command("ffmpeg", args...)
@@ -70,12 +69,6 @@ func ConvertAudio(src, mytype string) {
 		// 先尝试删除源文件
 		if err := os.Remove(src); err != nil {
 			log.Fatalf("删除源文件失败：%v\n", err)
-		}
-		// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
-		time.Sleep(100 * time.Millisecond)
-		// 尝试重命名
-		if err := os.Rename(dst, src); err != nil {
-			log.Fatalf("重命名文件失败：%v\n", err)
 		}
 	}
 }
