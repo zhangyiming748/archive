@@ -14,8 +14,8 @@ import (
 /*
 最终转换图片为 avif格式
 */
-func Convert2AVIF(src string,threads int) error {
-	if threads ==0 {
+func Convert2AVIF(src string, threads int) error {
+	if threads == 0 {
 		threads = runtime.NumCPU()
 	}
 	dst := strings.Replace(src, filepath.Ext(src), ".avif", 1)
@@ -25,7 +25,7 @@ func Convert2AVIF(src string,threads int) error {
 	}
 	if strings.ToLower(filepath.Ext(src)) == ".bmp" {
 		log.Printf("走bmp逻辑:%v\n", src)
-		ConvertBMP2AVIF4JPG(src, dst,threads)
+		ConvertBMP2AVIF4JPG(src, dst, threads)
 		return nil
 	}
 	if strings.ToLower(filepath.Ext(src)) == ".avif" {
@@ -59,7 +59,7 @@ func Convert2AVIF(src string,threads int) error {
 bmp先使用ffmpeg转换成中间格式jpg，再使用avifenc转换成avif
 需要安装用 ImageMagick（macOS 上 brew install imagemagick）
 */
-func ConvertBMP2AVIF4JPG(src, dst string,threads int) {
+func ConvertBMP2AVIF4JPG(src, dst string, threads int) {
 	if strings.ToLower(filepath.Ext(src)) != ".bmp" {
 		log.Printf("不是bmp文件:%v\n", src)
 		return
@@ -75,7 +75,7 @@ func ConvertBMP2AVIF4JPG(src, dst string,threads int) {
 		return
 	} else {
 		log.Printf("中间文件转换成功：%s\n", string(out))
-		if err := Convert2AVIF(middle,threads); err != nil {
+		if err := Convert2AVIF(middle, threads); err != nil {
 			log.Printf("中间文件转换错误,保留中间文件：%v\t删除源文件%v\n", middle, src)
 			os.Remove(src)
 		} else {
