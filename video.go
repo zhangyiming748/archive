@@ -347,17 +347,6 @@ func overFHD(vInfo FastMediaInfo.Video) bool {
 	return false
 }
 
-func getFrame(vInfo FastMediaInfo.Video) (int, error) {
-	if vInfo.FrameCount == "" {
-		return 0, fmt.Errorf("视频信息中FrameCount字段为空，可能原因：1)视频格式不支持 2)文件损坏 3)媒体信息解析失败")
-	}
-	frame, err := strconv.Atoi(vInfo.FrameCount)
-	if err != nil {
-		return 0, fmt.Errorf("无法将FrameCount '%s' 转换为整数: %v", vInfo.FrameCount, err)
-	}
-	return frame, nil
-}
-
 // checkOutputFileValid 检查输出文件是否有效（非0字节）
 // 如果文件大小为0，说明FFmpeg实际执行失败但未返回错误码
 func checkOutputFileValid(dst string) {
@@ -665,24 +654,4 @@ func hasAMD() bool {
 	}
 	// 查找h264_amf编码器
 	return strings.Contains(string(output), "h264_amf")
-}
-
-func mkv2mp4(src string) {
-	var (
-		cmd  *exec.Cmd
-		args []string
-	)
-	args = append(args, "-i", src)
-	args = append(args, "-c:v", "copy")
-	args = append(args, "-c:a", "copy")
-	args = append(args, "-c:s", "copy")
-	args = append(args, "-map_chapters", "-1")
-	args = append(args, strings.Replace(src, filepath.Ext(src), ".mp4", 1))
-	cmd = exec.Command("ffmpeg", args...)
-	log.Printf("开始执行命令:%s\n", cmd.String())
-	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("转换失败：%v\n", err)
-		return
-	}
-	os.Remove(src)
 }

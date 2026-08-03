@@ -3,3 +3,6 @@
 .vscode/
 *.db
 video_test.go
+archive.test
+sqlite.test
+util.test

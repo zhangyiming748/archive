@@ -39,11 +39,11 @@ func ConvertAudio(src, mytype string) {
 	volume := strings.Join([]string{"volume", Volume}, "=")
 	// 将 atempo 和 volume 组合成滤镜链
 	filterChain := strings.Join([]string{atempo, volume}, ",")
-//ffmpeg -i input.mp3 -c:a libopus -b:a 160k -application audio output.opus
+	//ffmpeg -i input.mp3 -c:a libopus -b:a 160k -application audio output.opus
 	args = append(args, "-c:a", "libopus")
 	args = append(args, "-map_metadata", "-1")
 	args = append(args, "-b:a", "160k")
-	args = append(args, "-application","audio")
+	args = append(args, "-application", "audio")
 	// 根据音频类型设置不同的处理参数
 	switch mytype {
 	case AudioBookType:
@@ -138,6 +138,40 @@ func Convert2Aac(src string) {
 		log.Fatalf("转换失败：%v\n", err)
 	} else {
 		fmt.Printf("转换成功：%s\n", string(out))
+		if err := os.Remove(src); err != nil {
+			log.Fatalf("删除源文件失败：%v\n", err)
+		}
+	}
+}
+
+func Convert2Opus(src string) {
+	// 生成临时文件路径
+	ext := filepath.Ext(src)
+	if strings.EqualFold(ext, ".opus") {
+		log.Printf("文件是opus格式,无需转换:%v\n", src)
+		return
+	}
+
+	dst := strings.Replace(src, filepath.Ext(src), ".opus", 1)
+
+	// 构建ffmpeg命令参数
+	args := []string{"-i", src}
+	//ffmpeg -i input.mp3 -c:a libopus -b:a 160k -application audio output.opus
+	args = append(args, "-c:a", "libopus")
+	args = append(args, "-map_metadata", "-1")
+	args = append(args, "-b:a", "160k")
+	args = append(args, "-application", "audio")
+	args = append(args, dst)
+	cmd := exec.Command("ffmpeg", args...)
+	log.Printf("准备执行命令:%s\n", cmd.String())
+	// 获取输出和错误管道
+
+	// 等待命令完成并处理结果
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.Fatalf("转换失败：%v\n", err)
+	} else {
+		fmt.Printf("转换成功：%s\n", string(out))
+		// 先尝试删除源文件
 		if err := os.Remove(src); err != nil {
 			log.Fatalf("删除源文件失败：%v\n", err)
 		}
