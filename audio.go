@@ -151,9 +151,7 @@ func Convert2Opus(src string) {
 		log.Printf("文件是opus格式,无需转换:%v\n", src)
 		return
 	}
-
 	dst := strings.Replace(src, filepath.Ext(src), ".opus", 1)
-
 	// 构建ffmpeg命令参数
 	args := []string{"-i", src}
 	//ffmpeg -i input.mp3 -c:a libopus -b:a 160k -application audio output.opus
