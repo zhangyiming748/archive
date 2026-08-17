@@ -27,7 +27,9 @@ func ConvertMKV2H265(src string, fhd bool) {
 	args = append(args, "-map", "0")
 	args = append(args, "-c:v", "libx265")
 	args = append(args, "-tag:v", "hvc1")
-	args = append(args, "-c:a", "aac")
+	args = append(args, "-c:a", "libopus")
+	args = append(args, "-b:a", "160k")
+	args = append(args, "-application", "audio")
 	args = append(args, "-c:s", "copy")
 	if fhd {
 		if overFHD(vInfo) {
@@ -106,7 +108,9 @@ func Convert2H265(src string, fhd, force bool) {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
 		args = append(args, "-c:v", "libx265")
 		args = append(args, "-tag:v", "hvc1")
-		args = append(args, "-c:a", "aac")
+		args = append(args, "-c:a", "libopus")
+		args = append(args, "-b:a", "160k")
+		args = append(args, "-application", "audio")
 		args = append(args, "-preset", "slow")
 		args = append(args, "-crf", "24") // H.265的CRF 24在画质和大小之间取得良好平衡
 		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
@@ -193,7 +197,9 @@ func Convert2H265MP4(src string, fhd, force bool) {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
 		args = append(args, "-c:v", "libx265")
 		args = append(args, "-tag:v", "hvc1")
-		args = append(args, "-c:a", "aac")
+		args = append(args, "-c:a", "libopus")
+		args = append(args, "-b:a", "160k")
+		args = append(args, "-application", "audio")
 		args = append(args, "-preset", "slow")
 		args = append(args, "-crf", "24") // H.265的CRF 24在画质和大小之间取得良好平衡
 		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
@@ -296,7 +302,9 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
 		args = append(args, "-c:v", "libx265")
 		args = append(args, "-tag:v", "hvc1")
-		args = append(args, "-c:a", "aac")
+		args = append(args, "-c:a", "libopus")
+		args = append(args, "-b:a", "160k")
+		args = append(args, "-application", "audio")
 		args = append(args, "-preset", "fast")
 		args = append(args, "-crf", "28") // H.265的CRF 24在画质和大小之间取得良好平衡
 		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
@@ -414,12 +422,14 @@ func CloneMkv2H265(src string) {
 		}
 	} else {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
-		args = append(args, "-map", "0", "-c:v", "libx265", "-c:a", "aac", "-tag:v", "hvc1")
+		args = append(args, "-map", "0", "-c:v", "libx265", "-tag:v", "hvc1")
+		args = append(args, "-c:a", "libopus")
+		args = append(args, "-b:a", "160k")
+		args = append(args, "-application", "audio")
 		if needsResize {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	}
-	args = append(args, "-c:a", "aac")
 	args = append(args, "-map_chapters", "-1")
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
@@ -471,7 +481,17 @@ func FastConvertVideo2StandAvc(src string) {
 	}
 
 	tmp_name := strings.Replace(src, filepath.Ext(src), "_fast.mp4", 1)
-	cmd := exec.Command("ffmpeg", "-i", src, "-c:v", "libx264", "-c:a", "aac", "-map_chapters", "-1", tmp_name)
+	args := []string{"-i", src}
+	args = append(args, "-c:v", "libx264")
+	args = append(args, "-preset", "fast")
+	args = append(args, "-crf", "23")          // CRF 23 是 x264 的默认值，在画质和文件大小之间取得平衡
+	args = append(args, "-pix_fmt", "yuv420p") // 确保兼容性
+	args = append(args, "-c:a", "libopus")
+	args = append(args, "-b:a", "160k")
+	args = append(args, "-application", "audio")
+	args = append(args, "-map_chapters", "-1")
+	args = append(args, tmp_name)
+	cmd := exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
 		log.Printf("转换失败：%v\n", err)
@@ -581,7 +601,9 @@ func RotateVideo(src string, direction string) {
 		args = append(args, "-pix_fmt", "yuv420p") // 标准像素格式
 	}
 	args = append(args, "-tag:v", "avc1")
-	args = append(args, "-c:a", "aac")
+	args = append(args, "-c:a", "libopus")
+	args = append(args, "-b:a", "160k")
+	args = append(args, "-application", "audio")
 	args = append(args, "-map_chapters", "-1")
 	args = append(args, tmp_name)
 	cmd = exec.Command("ffmpeg", args...)
@@ -636,7 +658,9 @@ func DjiVideoConvert(src, dst string) {
 	args = append(args, "-i", src)
 	args = append(args, "-c:v", "libx265")
 	args = append(args, "-tag:v", "hvc1")
-	args = append(args, "-c:a", "aac")
+	args = append(args, "-c:a", "libopus")
+	args = append(args, "-b:a", "160k")
+	args = append(args, "-application", "audio")
 	args = append(args, "-map_chapters", "-1")
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
