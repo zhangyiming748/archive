@@ -47,6 +47,11 @@ func ConvertMKV2H265(src string, fhd bool) {
 	checkOutputFileValid(dst)
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
+	// 如果是 WMV 文件，不删除源文件，直接返回
+	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
+		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		return
+	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
@@ -134,6 +139,11 @@ func Convert2H265(src string, fhd, force bool) {
 
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
+	// 如果是 WMV 文件，不删除源文件，直接返回
+	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
+		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		return
+	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
@@ -215,6 +225,11 @@ func Convert2H265MP4(src string, fhd, force bool) {
 
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
+	// 如果是 WMV 文件，不删除源文件，直接返回
+	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
+		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		return
+	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
@@ -312,6 +327,11 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
+	// 如果是 WMV 文件，不删除源文件，直接返回
+	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
+		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		return
+	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
@@ -414,6 +434,11 @@ func CloneMkv2H265(src string) {
 
 	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
 	diffSize(src, dst)
+	// 如果是 WMV 文件，不删除源文件，直接返回
+	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
+		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		return
+	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
