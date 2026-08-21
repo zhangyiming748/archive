@@ -261,6 +261,107 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	}
 }
 
+// isEncodedByLibx265 通过 ffprobe 读取视频流的 encoder 标签判断是否由 libx265 编码。
+// libx265 编码的文件流标签形如 "Lavc... libx265"；
+// 硬件编码器不会带该标签，例如 NVENC HEVC、QSV、AMF 或 VideoToolbox 编码的文件。
+// ffprobe 不可用或标签缺失时返回 false（保守处理，继续走重编码流程）。
+func isEncodedByLibx265(src string) bool {
+	cmd := exec.Command("ffprobe", "-v", "error",
+		"-select_streams", "v:0",
+		"-show_entries", "stream_tags=encoder",
+		"-of", "default=noprint_wrappers=1", src)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("ffprobe检测编码器失败，按非libx265处理：%v\n", err)
+		return false
+	}
+	// 标签格式如 "encoder=Lavc62.28.102 libx265"（MKV中为大写ENCODER=）
+	return strings.Contains(string(output), "libx265")
+}
+
+/*
+保持原容器格式重编码视频文件（MKV保持MKV、MP4保持MP4），视频流使用libx265重编码，
+编码参数与Convert2H265MP4保持一致；如果检测到原视频已经是libx265编码则跳过重编码
+*/
+func ReEncode2H265KeepContainer(src string, fhd, force bool) {
+	mi := FastMediaInfo.GetStandMediaInfo(src)
+	vInfo := mi.Video
+
+	// 已经是libx265编码则跳过重编码流程
+	if isEncodedByLibx265(src) {
+		log.Printf("视频已是libx265编码，跳过重编码:%s\n", src)
+		return
+	}
+	log.Printf("视频非libx265编码，开始重编码:%s\n", src)
+
+	ext := filepath.Ext(src)
+	dst := strings.Replace(src, ext, "_tmp"+ext, 1)
+	args := []string{"-i", src}
+
+	// MKV容器需要-map 0保留全部音频轨、字幕轨
+	if strings.ToLower(ext) == ".mkv" {
+		args = append(args, "-map", "0")
+		args = append(args, "-c:s", "copy")
+	}
+
+	args = append(args, "-c:v", "libx265")
+	args = append(args, "-tag:v", "hvc1")
+	args = append(args, "-c:a", "libopus")
+	args = append(args, "-b:a", "160k")
+	args = append(args, "-application", "audio")
+	args = append(args, "-af", opusStereoDownmix)
+	args = append(args, "-preset", "slow")
+	args = append(args, "-crf", "24") // H.265的CRF 24在画质和大小之间取得良好平衡
+	// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
+	args = append(args, "-pix_fmt", "yuv420p")
+	args = append(args, "-x265-params", "aq-mode=3:aq-strength=1.2:psy-rd=2.0:psy-rdoq=2.0:rdoq-level=1") // 优化的心理视觉参数
+	// if fhd && overFHD(vInfo) {
+	// 	args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
+	// }
+	args = append(args, "-map_chapters", "-1")
+	if force {
+		args = append(args, "-y")
+		log.Printf("强制覆盖输出文件:%s\n", dst)
+	}
+	args = append(args, dst)
+	cmd := exec.Command("ffmpeg", args...)
+
+	// 打印视频信息用于调试
+	log.Printf("视频信息 - 格式:%s, 编码:%s, 分辨率:%sx%s, 帧率:%s, 帧数:%s\n",
+		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
+
+	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
+		log.Printf("转换失败：%v\n", err)
+		return
+	}
+
+	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	checkOutputFileValid(dst)
+
+	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
+	diffSize(src, dst)
+	// 如果是 WMV 文件，不删除源文件，直接返回
+	if strings.ToLower(ext) == ".wmv" {
+		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		return
+	}
+	// 先尝试删除源文件
+	if err := os.Remove(src); err != nil {
+		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
+		//尝试重命名源文件，添加 should_be_deleted
+		nName := strings.Replace(src, ext, ".should_be_deleted", 1)
+		if err := os.Rename(src, nName); err != nil {
+			log.Fatalf("重命名文件失败：%v\n", err)
+		}
+	}
+	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
+	time.Sleep(100 * time.Millisecond)
+	// 容器格式未改变，直接把临时文件改回原文件名
+	if err := os.Rename(dst, src); err != nil {
+		log.Fatalf("重命名文件失败：%v\n", err)
+	}
+}
+
 func isH265(vInfo FastMediaInfo.Video) bool {
 	if vInfo.Format == "HEVC" {
 		return true
