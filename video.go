@@ -14,6 +14,10 @@ import (
 	"github.com/zhangyiming748/stand"
 )
 
+// opusStereoDownmix libopus 只支持有限的声道布局（如 5.1(side) 等非标布局会报 Invalid channel layout），
+// 通过 pan 滤镜显式降级为立体声，表达式中不存在的声道自动按 0 处理，不影响原有的立体声/单声道输入
+const opusStereoDownmix = "pan=stereo|c0=FL+0.5*FC+0.5*BL+0.5*SL|c1=FR+0.5*FC+0.5*BR+0.5*SR"
+
 // 转换mkv文件为h265格式,但保留全部的音频轨、字幕轨
 // ffmpeg -i .\天将雄狮.Dragon.Blade.2015.BluRay.1080p.x265.10bit.MNHD-FRDS.mkv -map 0 -c:v libx265 -c:a aac -tag:v hvc1 -c:s copy 天将雄狮.mkv
 func ConvertMKV2H265(src string, fhd bool) {
@@ -30,6 +34,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 	args = append(args, "-c:a", "libopus")
 	args = append(args, "-b:a", "160k")
 	args = append(args, "-application", "audio")
+	args = append(args, "-af", opusStereoDownmix)
 	args = append(args, "-c:s", "copy")
 	if fhd {
 		if overFHD(vInfo) {
@@ -111,6 +116,7 @@ func Convert2H265(src string, fhd, force bool) {
 		args = append(args, "-c:a", "libopus")
 		args = append(args, "-b:a", "160k")
 		args = append(args, "-application", "audio")
+		args = append(args, "-af", opusStereoDownmix)
 		args = append(args, "-preset", "slow")
 		args = append(args, "-crf", "24") // H.265的CRF 24在画质和大小之间取得良好平衡
 		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
@@ -200,6 +206,7 @@ func Convert2H265MP4(src string, fhd, force bool) {
 		args = append(args, "-c:a", "libopus")
 		args = append(args, "-b:a", "160k")
 		args = append(args, "-application", "audio")
+		args = append(args, "-af", opusStereoDownmix)
 		args = append(args, "-preset", "slow")
 		args = append(args, "-crf", "24") // H.265的CRF 24在画质和大小之间取得良好平衡
 		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
@@ -305,6 +312,7 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 		args = append(args, "-c:a", "libopus")
 		args = append(args, "-b:a", "160k")
 		args = append(args, "-application", "audio")
+		args = append(args, "-af", opusStereoDownmix)
 		args = append(args, "-preset", "fast")
 		args = append(args, "-crf", "28") // H.265的CRF 24在画质和大小之间取得良好平衡
 		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
@@ -426,6 +434,7 @@ func CloneMkv2H265(src string) {
 		args = append(args, "-c:a", "libopus")
 		args = append(args, "-b:a", "160k")
 		args = append(args, "-application", "audio")
+		args = append(args, "-af", opusStereoDownmix)
 		if needsResize {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
@@ -489,6 +498,7 @@ func FastConvertVideo2StandAvc(src string) {
 	args = append(args, "-c:a", "libopus")
 	args = append(args, "-b:a", "160k")
 	args = append(args, "-application", "audio")
+	args = append(args, "-af", opusStereoDownmix)
 	args = append(args, "-map_chapters", "-1")
 	args = append(args, tmp_name)
 	cmd := exec.Command("ffmpeg", args...)
@@ -604,6 +614,7 @@ func RotateVideo(src string, direction string) {
 	args = append(args, "-c:a", "libopus")
 	args = append(args, "-b:a", "160k")
 	args = append(args, "-application", "audio")
+	args = append(args, "-af", opusStereoDownmix)
 	args = append(args, "-map_chapters", "-1")
 	args = append(args, tmp_name)
 	cmd = exec.Command("ffmpeg", args...)
@@ -661,6 +672,7 @@ func DjiVideoConvert(src, dst string) {
 	args = append(args, "-c:a", "libopus")
 	args = append(args, "-b:a", "160k")
 	args = append(args, "-application", "audio")
+	args = append(args, "-af", opusStereoDownmix)
 	args = append(args, "-map_chapters", "-1")
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)

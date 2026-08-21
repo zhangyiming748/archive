@@ -37,8 +37,9 @@ func ConvertAudio(src, mytype string) {
 	ff := audition2ffmpeg("65")
 	atempo := strings.Join([]string{"atempo", ff}, "=")
 	volume := strings.Join([]string{"volume", Volume}, "=")
-	// 将 atempo 和 volume 组合成滤镜链
-	filterChain := strings.Join([]string{atempo, volume}, ",")
+	// 将 atempo、volume 和 opus 立体声降级滤镜组合成滤镜链
+	// 注意：-filter:a 与 -af 是同一参数的别名，不能分开重复指定，否则后者会覆盖前者
+	filterChain := strings.Join([]string{opusStereoDownmix, atempo, volume}, ",")
 	//ffmpeg -i input.mp3 -c:a libopus -b:a 160k -application audio output.opus
 	args = append(args, "-c:a", "libopus")
 	args = append(args, "-map_metadata", "-1")
@@ -51,7 +52,7 @@ func ConvertAudio(src, mytype string) {
 		args = append(args, "-filter:a", filterChain)
 	case RapMusicType:
 		// 歌曲类只增加电平
-		args = append(args, "-filter:a", volume)
+		args = append(args, "-filter:a", strings.Join([]string{opusStereoDownmix, volume}, ","))
 	default:
 		// 其他类型
 		return
@@ -159,6 +160,7 @@ func Convert2Opus(src string) {
 	args = append(args, "-map_metadata", "-1")
 	args = append(args, "-b:a", "160k")
 	args = append(args, "-application", "audio")
+	args = append(args, "-af", opusStereoDownmix)
 	args = append(args, dst)
 	cmd := exec.Command("ffmpeg", args...)
 	log.Printf("准备执行命令:%s\n", cmd.String())
