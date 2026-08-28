@@ -11,6 +11,18 @@ import (
 	"strings"
 )
 
+// replaceExt 将路径末尾的文件名扩展名替换为 newExt
+// 注意：不能用 strings.Replace(src, filepath.Ext(src), ...) 实现，
+// 该写法会替换路径中首次出现的位置，当父目录名包含与扩展名相同的字符串时（如 "01.2003-乐.opus+wav"）会误替换目录名，
+// 这里只针对文件名部分做后缀替换，避免误伤路径中的其他片段；文件无扩展名时直接追加 newExt
+func replaceExt(src, newExt string) string {
+	ext := filepath.Ext(src)
+	if ext == "" {
+		return src + newExt
+	}
+	return strings.TrimSuffix(src, ext) + newExt
+}
+
 // 音频处理相关的常量定义
 const (
 	// AudioBookType 有声书类型标识
@@ -30,7 +42,7 @@ mytype 为音频类型，决定处理方式
 */
 func ConvertAudio(src, mytype string) {
 	// 生成临时文件路径
-	dst := strings.Replace(src, filepath.Ext(src), ".opus", 1)
+	dst := replaceExt(src, ".opus")
 
 	// 构建ffmpeg命令参数
 	args := []string{"-i", src}
@@ -95,7 +107,7 @@ func Convert2Mp3(src string) {
 		return
 	}
 	//转换给定的文件为高品质MP3编码的MP3文件（320kbps，人耳无损）
-	mp3 := strings.Replace(src, filepath.Ext(src), ".mp3", 1)
+	mp3 := replaceExt(src, ".mp3")
 	var (
 		args []string
 		cmd  *exec.Cmd
@@ -123,7 +135,7 @@ func Convert2Aac(src string) {
 		return
 	}
 	//转换给定的文件为高品质AAC编码的M4A文件（256kbps，接近无损）
-	aac := strings.Replace(src, filepath.Ext(src), ".m4a", 1)
+	aac := replaceExt(src, ".m4a")
 	var (
 		args []string
 		cmd  *exec.Cmd
@@ -152,7 +164,7 @@ func Convert2Opus(src string) {
 		log.Printf("文件是opus格式,无需转换:%v\n", src)
 		return
 	}
-	dst := strings.Replace(src, filepath.Ext(src), ".opus", 1)
+	dst := replaceExt(src, ".opus")
 	// 构建ffmpeg命令参数
 	args := []string{"-i", src}
 	//ffmpeg -i input.mp3 -c:a libopus -b:a 160k -application audio output.opus

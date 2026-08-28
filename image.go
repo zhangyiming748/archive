@@ -18,7 +18,7 @@ func Convert2AVIF(src string, threads int) error {
 	if threads == 0 {
 		threads = runtime.NumCPU()
 	}
-	dst := strings.Replace(src, filepath.Ext(src), ".avif", 1)
+	dst := replaceExt(src, ".avif")
 	if strings.ToLower(filepath.Ext(src)) == ".gif" {
 		log.Printf("跳过gif文件:%v\n", src)
 		return nil
@@ -64,7 +64,7 @@ func ConvertBMP2AVIF4JPG(src, dst string, threads int) {
 		log.Printf("不是bmp文件:%v\n", src)
 		return
 	}
-	middle := strings.Replace(src, filepath.Ext(src), ".png", 1)
+	middle := replaceExt(src, ".png")
 	args := []string{}
 	args = append(args, src)
 	args = append(args, middle)

@@ -25,7 +25,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mkv", 1)
+	dst := replaceExt(src, "_tmp.mkv")
 
 	log.Printf("处理视频文件:%s\n", src)
 	args = append(args, "-map", "0")
@@ -63,7 +63,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
 		//尝试重命名源文件，添加 should_be_deleted
-		nName := strings.Replace(src, filepath.Ext(src), ".should_be_deleted", 1)
+		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
@@ -71,7 +71,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
-	src = strings.Replace(src, filepath.Ext(src), ".mkv", 1)
+	src = replaceExt(src, ".mkv")
 	if err := os.Rename(dst, src); err != nil {
 		log.Fatalf("重命名文件失败：%v\n", err)
 	}
@@ -90,7 +90,7 @@ func Convert2H265(src string, fhd, force bool) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mp4", 1)
+	dst := replaceExt(src, "_tmp.mp4")
 
 	// 优先检查分辨率是否需要转换
 	needsResize := fhd && overFHD(vInfo)
@@ -158,7 +158,7 @@ func Convert2H265(src string, fhd, force bool) {
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
 		//尝试重命名源文件，添加 should_be_deleted
-		nName := strings.Replace(src, filepath.Ext(src), ".should_be_deleted", 1)
+		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
@@ -166,7 +166,7 @@ func Convert2H265(src string, fhd, force bool) {
 	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
-	src = strings.Replace(src, filepath.Ext(src), ".mp4", 1)
+	src = replaceExt(src, ".mp4")
 	if err := os.Rename(dst, src); err != nil {
 		log.Fatalf("重命名文件失败：%v\n", err)
 	}
@@ -180,7 +180,7 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mp4", 1)
+	dst := replaceExt(src, "_tmp.mp4")
 
 	// 优先检查分辨率是否需要转换
 	needsResize := fhd && overFHD(vInfo)
@@ -247,7 +247,7 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
 		//尝试重命名源文件，添加 should_be_deleted
-		nName := strings.Replace(src, filepath.Ext(src), ".should_be_deleted", 1)
+		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
@@ -255,7 +255,7 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
-	src = strings.Replace(src, filepath.Ext(src), ".mp4", 1)
+	src = replaceExt(src, ".mp4")
 	if err := os.Rename(dst, src); err != nil {
 		log.Fatalf("重命名文件失败：%v\n", err)
 	}
@@ -387,7 +387,7 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mp4", 1)
+	dst := replaceExt(src, "_tmp.mp4")
 
 	// 优先检查分辨率是否需要转换
 	needsResize := fhd && overFHD(vInfo)
@@ -453,7 +453,7 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
 		//尝试重命名源文件，添加 should_be_deleted
-		nName := strings.Replace(src, filepath.Ext(src), ".should_be_deleted", 1)
+		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
@@ -461,7 +461,7 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
-	src = strings.Replace(src, filepath.Ext(src), ".mp4", 1)
+	src = replaceExt(src, ".mp4")
 	if err := os.Rename(dst, src); err != nil {
 		log.Fatalf("重命名文件失败：%v\n", err)
 	}
@@ -510,7 +510,7 @@ func CloneMkv2H265(src string) {
 	vInfo := mi.Video
 	var cmd *exec.Cmd
 	args := []string{"-i", src}
-	dst := strings.Replace(src, filepath.Ext(src), "_tmp.mkv", 1)
+	dst := replaceExt(src, "_tmp.mkv")
 
 	// 优先检查分辨率是否需要转换（MKV默认启用FHD检查）
 	needsResize := overFHD(vInfo)
@@ -563,7 +563,7 @@ func CloneMkv2H265(src string) {
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
 		//尝试重命名源文件，添加 should_be_deleted
-		nName := strings.Replace(src, filepath.Ext(src), ".should_be_deleted", 1)
+		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
@@ -571,7 +571,7 @@ func CloneMkv2H265(src string) {
 	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
-	src = strings.Replace(src, filepath.Ext(src), ".mkv", 1)
+	src = replaceExt(src, ".mkv")
 	if err := os.Rename(dst, src); err != nil {
 		log.Fatalf("重命名文件失败：%v\n", err)
 	}
