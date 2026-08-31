@@ -46,7 +46,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	err := stand.ExecCommandWithBar(cmd, src)
 	if err != nil {
-		log.Printf("转换失败：%v\n", err)
+		log.Printf("转换失败:%v\n", err)
 		return
 	}
 
@@ -56,16 +56,16 @@ func ConvertMKV2H265(src string, fhd bool) {
 	diffSize(src, dst)
 	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
-		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		log.Printf("WMV 文件已转换,保留原始文件: %s\n", src)
 		return
 	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
-		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
+		log.Printf("删除源文件失败:%v\t尝试重命名源文件,添加 should_be_deleted\n", err)
 		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
-			log.Fatalf("重命名文件失败：%v\n", err)
+			log.Fatalf("重命名文件失败:%v\n", err)
 		}
 	}
 	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
@@ -73,7 +73,7 @@ func ConvertMKV2H265(src string, fhd bool) {
 	// 尝试重命名
 	src = replaceExt(src, ".mkv")
 	if err := os.Rename(dst, src); err != nil {
-		log.Fatalf("重命名文件失败：%v\n", err)
+		log.Fatalf("重命名文件失败:%v\n", err)
 	}
 }
 
@@ -140,7 +140,7 @@ func Convert2H265(src string, fhd, force bool) {
 
 	// 直接使用 ExecCommandWithBar 执行命令
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("转换失败：%v\n", err)
+		log.Printf("转换失败:%v\n", err)
 		return
 	}
 
@@ -151,16 +151,16 @@ func Convert2H265(src string, fhd, force bool) {
 	diffSize(src, dst)
 	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
-		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		log.Printf("WMV 文件已转换,保留原始文件: %s\n", src)
 		return
 	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
-		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
+		log.Printf("删除源文件失败:%v\t尝试重命名源文件,添加 should_be_deleted\n", err)
 		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
-			log.Fatalf("重命名文件失败：%v\n", err)
+			log.Fatalf("重命名文件失败:%v\n", err)
 		}
 	}
 	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
@@ -168,7 +168,7 @@ func Convert2H265(src string, fhd, force bool) {
 	// 尝试重命名
 	src = replaceExt(src, ".mp4")
 	if err := os.Rename(dst, src); err != nil {
-		log.Fatalf("重命名文件失败：%v\n", err)
+		log.Fatalf("重命名文件失败:%v\n", err)
 	}
 }
 
@@ -229,7 +229,7 @@ func Convert2H265MP4(src string, fhd, force bool) {
 		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
 
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("转换失败：%v\n", err)
+		log.Printf("转换失败:%v\n", err)
 		return
 	}
 
@@ -240,16 +240,16 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	diffSize(src, dst)
 	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
-		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		log.Printf("WMV 文件已转换,保留原始文件: %s\n", src)
 		return
 	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
-		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
+		log.Printf("删除源文件失败:%v\t尝试重命名源文件,添加 should_be_deleted\n", err)
 		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
-			log.Fatalf("重命名文件失败：%v\n", err)
+			log.Fatalf("重命名文件失败:%v\n", err)
 		}
 	}
 	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
@@ -257,7 +257,7 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	// 尝试重命名
 	src = replaceExt(src, ".mp4")
 	if err := os.Rename(dst, src); err != nil {
-		log.Fatalf("重命名文件失败：%v\n", err)
+		log.Fatalf("重命名文件失败:%v\n", err)
 	}
 }
 
@@ -272,7 +272,7 @@ func isEncodedByLibx265(src string) bool {
 		"-of", "default=noprint_wrappers=1", src)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("ffprobe检测编码器失败，按非libx265处理：%v\n", err)
+		log.Printf("ffprobe检测编码器失败,按非libx265处理:%v\n", err)
 		return false
 	}
 	// 标签格式如 "encoder=Lavc62.28.102 libx265"(MKV中为大写ENCODER=)
@@ -289,10 +289,10 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 
 	// 已经是libx265编码则跳过重编码流程
 	if isEncodedByLibx265(src) {
-		log.Printf("视频已是libx265编码，跳过重编码:%s\n", src)
+		log.Printf("视频已是libx265编码,跳过重编码:%s\n", src)
 		return
 	}
-	log.Printf("视频非libx265编码，开始重编码:%s\n", src)
+	log.Printf("视频非libx265编码,开始重编码:%s\n", src)
 
 	ext := filepath.Ext(src)
 	dst := strings.Replace(src, ext, "_tmp"+ext, 1)
@@ -331,7 +331,7 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
 
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("转换失败：%v\n", err)
+		log.Printf("转换失败:%v\n", err)
 		return
 	}
 
@@ -342,23 +342,23 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 	diffSize(src, dst)
 	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(ext) == ".wmv" {
-		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		log.Printf("WMV 文件已转换,保留原始文件: %s\n", src)
 		return
 	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
-		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
+		log.Printf("删除源文件失败:%v\t尝试重命名源文件,添加 should_be_deleted\n", err)
 		//尝试重命名源文件,添加 should_be_deleted
 		nName := strings.Replace(src, ext, ".should_be_deleted", 1)
 		if err := os.Rename(src, nName); err != nil {
-			log.Fatalf("重命名文件失败：%v\n", err)
+			log.Fatalf("重命名文件失败:%v\n", err)
 		}
 	}
 	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 容器格式未改变,直接把临时文件改回原文件名
 	if err := os.Rename(dst, src); err != nil {
-		log.Fatalf("重命名文件失败：%v\n", err)
+		log.Fatalf("重命名文件失败:%v\n", err)
 	}
 }
 
@@ -435,7 +435,7 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 		vInfo.Format, vInfo.CodecID, vInfo.Width, vInfo.Height, vInfo.FrameRate, vInfo.FrameCount)
 
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("转换失败：%v\n", err)
+		log.Printf("转换失败:%v\n", err)
 		return
 	}
 
@@ -446,16 +446,16 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	diffSize(src, dst)
 	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
-		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		log.Printf("WMV 文件已转换,保留原始文件: %s\n", src)
 		return
 	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
-		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
+		log.Printf("删除源文件失败:%v\t尝试重命名源文件,添加 should_be_deleted\n", err)
 		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
-			log.Fatalf("重命名文件失败：%v\n", err)
+			log.Fatalf("重命名文件失败:%v\n", err)
 		}
 	}
 	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
@@ -463,7 +463,7 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	// 尝试重命名
 	src = replaceExt(src, ".mp4")
 	if err := os.Rename(dst, src); err != nil {
-		log.Fatalf("重命名文件失败：%v\n", err)
+		log.Fatalf("重命名文件失败:%v\n", err)
 	}
 }
 
@@ -489,12 +489,12 @@ func overFHD(vInfo FastMediaInfo.Video) bool {
 func checkOutputFileValid(dst string) {
 	dstInfo, err := os.Stat(dst)
 	if err != nil {
-		log.Fatalf("无法获取目标文件信息：%v\n", err)
+		log.Fatalf("无法获取目标文件信息:%v\n", err)
 	}
 	if dstInfo.Size() == 0 {
-		log.Printf("错误：转换后的文件大小为0字节，说明FFmpeg执行失败但未返回错误码\n")
+		log.Printf("错误:转换后的文件大小为0字节,说明FFmpeg执行失败但未返回错误码\n")
 		log.Printf("目标文件: %s\n", dst)
-		panic(fmt.Sprintf("FFmpeg转换失败：输出文件 %s 大小为0字节", dst))
+		panic(fmt.Sprintf("FFmpeg转换失败:输出文件 %s 大小为0字节", dst))
 	}
 }
 
@@ -545,7 +545,7 @@ func CloneMkv2H265(src string) {
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("转换失败：%v\n", err)
+		log.Printf("转换失败:%v\n", err)
 		return
 	}
 
@@ -556,16 +556,16 @@ func CloneMkv2H265(src string) {
 	diffSize(src, dst)
 	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
-		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
+		log.Printf("WMV 文件已转换,保留原始文件: %s\n", src)
 		return
 	}
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
-		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
+		log.Printf("删除源文件失败:%v\t尝试重命名源文件,添加 should_be_deleted\n", err)
 		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
-			log.Fatalf("重命名文件失败：%v\n", err)
+			log.Fatalf("重命名文件失败:%v\n", err)
 		}
 	}
 	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
@@ -573,7 +573,7 @@ func CloneMkv2H265(src string) {
 	// 尝试重命名
 	src = replaceExt(src, ".mkv")
 	if err := os.Rename(dst, src); err != nil {
-		log.Fatalf("重命名文件失败：%v\n", err)
+		log.Fatalf("重命名文件失败:%v\n", err)
 	}
 }
 
@@ -605,13 +605,13 @@ func FastConvertVideo2StandAvc(src string) {
 	cmd := exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("转换失败：%v\n", err)
+		log.Printf("转换失败:%v\n", err)
 		return
 	}
 	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(tmp_name)
 	if err := os.Remove(src); err != nil {
-		log.Fatalf("删除源文件失败：%v\n", err)
+		log.Fatalf("删除源文件失败:%v\n", err)
 	}
 }
 
@@ -633,13 +633,13 @@ func FastConvertMkv(src string) {
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("转换失败：%v\n", err)
+		log.Printf("转换失败:%v\n", err)
 		return
 	}
 	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(mp4)
 	if err := os.Remove(src); err != nil {
-		log.Fatalf("删除源文件失败：%v\n", err)
+		log.Fatalf("删除源文件失败:%v\n", err)
 	}
 }
 func MergeMp4WithSameNameSrt(video, srt string) error {
@@ -655,7 +655,7 @@ func MergeMp4WithSameNameSrt(video, srt string) error {
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("当前生成的内嵌字幕的命令是:%v\n", cmd.String())
 	if err := stand.ExecCommandWithBar(cmd, video); err != nil {
-		log.Printf("内嵌字幕失败：%v\n", err)
+		log.Printf("内嵌字幕失败:%v\n", err)
 		return err
 	}
 	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
@@ -721,7 +721,7 @@ func RotateVideo(src string, direction string) {
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("旋转失败：%v\n", err)
+		log.Printf("旋转失败:%v\n", err)
 		return
 	}
 	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
@@ -731,10 +731,10 @@ func RotateVideo(src string, direction string) {
 		2. 临时文件改为旧文件的文件名
 	*/
 	if err := os.Remove(src); err != nil {
-		log.Printf("删除源文件失败：%v\n", err)
+		log.Printf("删除源文件失败:%v\n", err)
 	} else {
 		if err := os.Rename(tmp_name, strings.Replace(src, filepath.Ext(src), ".mp4", 1)); err != nil {
-			log.Printf("重命名文件失败：%v\n", err)
+			log.Printf("重命名文件失败:%v\n", err)
 		}
 	}
 }
@@ -751,7 +751,7 @@ func RotateVideo(src string, direction string) {
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("提取音频失败：%v\n", err)
+		log.Printf("提取音频失败:%v\n", err)
 		return
 	}
 	// 检查提取的音频文件是否为0字节
@@ -779,7 +779,7 @@ func DjiVideoConvert(src, dst string) {
 	cmd = exec.Command("ffmpeg", args...)
 	log.Printf("开始执行命令:%s\n", cmd.String())
 	if err := stand.ExecCommandWithBar(cmd, src); err != nil {
-		log.Printf("转换失败：%v\n", err)
+		log.Printf("转换失败:%v\n", err)
 		return
 	}
 	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败

@@ -76,12 +76,12 @@ func ConvertAudio(src, mytype string) {
 
 	// 等待命令完成并处理结果
 	if out, err := cmd.CombinedOutput(); err != nil {
-		log.Fatalf("转换失败：%v\n", err)
+		log.Fatalf("转换失败:%v\n", err)
 	} else {
-		fmt.Printf("转换成功：%s\n", string(out))
+		fmt.Printf("转换成功:%s\n", string(out))
 		// 先尝试删除源文件
 		if err := os.Remove(src); err != nil {
-			log.Fatalf("删除源文件失败：%v\n", err)
+			log.Fatalf("删除源文件失败:%v\n", err)
 		}
 	}
 }
@@ -120,11 +120,11 @@ func Convert2Mp3(src string) {
 	args = append(args, mp3)
 	cmd = exec.Command("ffmpeg", args...)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		log.Fatalf("转换失败：%v\n", err)
+		log.Fatalf("转换失败:%v\n", err)
 	} else {
-		fmt.Printf("转换成功：%s\n", string(out))
+		fmt.Printf("转换成功:%s\n", string(out))
 		if err := os.Remove(src); err != nil {
-			log.Fatalf("删除源文件失败：%v\n", err)
+			log.Fatalf("删除源文件失败:%v\n", err)
 		}
 	}
 }
@@ -148,11 +148,11 @@ func Convert2Aac(src string) {
 	args = append(args, aac)
 	cmd = exec.Command("ffmpeg", args...)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		log.Fatalf("转换失败：%v\n", err)
+		log.Fatalf("转换失败:%v\n", err)
 	} else {
-		fmt.Printf("转换成功：%s\n", string(out))
+		fmt.Printf("转换成功:%s\n", string(out))
 		if err := os.Remove(src); err != nil {
-			log.Fatalf("删除源文件失败：%v\n", err)
+			log.Fatalf("删除源文件失败:%v\n", err)
 		}
 	}
 }
@@ -180,12 +180,12 @@ func Convert2Opus(src string) {
 
 	// 等待命令完成并处理结果
 	if out, err := cmd.CombinedOutput(); err != nil {
-		log.Fatalf("转换失败：%v\n", err)
+		log.Fatalf("转换失败:%v\n", err)
 	} else {
-		fmt.Printf("转换成功：%s\n", string(out))
+		fmt.Printf("转换成功:%s\n", string(out))
 		// 先尝试删除源文件
 		if err := os.Remove(src); err != nil {
-			log.Fatalf("删除源文件失败：%v\n", err)
+			log.Fatalf("删除源文件失败:%v\n", err)
 		}
 	}
 }

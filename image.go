@@ -44,12 +44,12 @@ func Convert2AVIF(src string, threads int) error {
 	cmd := exec.Command("avifenc", args...)
 	log.Printf("开始运行转换命令:%v\n", cmd.String())
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("转换失败：%v\n源文件%v\n", err, src)
+		return fmt.Errorf("转换失败:%v\n源文件%v\n", err, src)
 	} else {
-		fmt.Printf("转换成功：%s\n", string(out))
+		fmt.Printf("转换成功:%s\n", string(out))
 		diffSize(src, dst)
 		if e := os.Remove(src); e != nil {
-			return fmt.Errorf("删除源文件失败：%v\n", err)
+			return fmt.Errorf("删除源文件失败:%v\n", err)
 		}
 	}
 	return nil
@@ -74,12 +74,12 @@ func ConvertBMP2AVIF4JPG(src, dst string, threads int) {
 		log.Printf("中间文件转换失败,保留原文件%v\n", src)
 		return
 	} else {
-		log.Printf("中间文件转换成功：%s\n", string(out))
+		log.Printf("中间文件转换成功:%s\n", string(out))
 		if err := Convert2AVIF(middle, threads); err != nil {
-			log.Printf("中间文件转换错误,保留中间文件：%v\t删除源文件%v\n", middle, src)
+			log.Printf("中间文件转换错误,保留中间文件:%v\t删除源文件%v\n", middle, src)
 			os.Remove(src)
 		} else {
-			log.Printf("中间文件转换成功,删除中间文件：%v\t删除源文件%v\n", middle, src)
+			log.Printf("中间文件转换成功,删除中间文件:%v\t删除源文件%v\n", middle, src)
 			os.Remove(middle)
 			os.Remove(src)
 		}

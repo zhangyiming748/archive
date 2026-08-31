@@ -37,9 +37,9 @@ func CheckVideoDependencies() {
 
 	// 检查是否有缺失的依赖
 	if len(missingDeps) > 0 {
-		log.Fatalf("缺少以下必要依赖: %v，请安装后再运行程序。\n", missingDeps)
+		log.Fatalf("缺少以下必要依赖: %v,请安装后再运行程序.\n", missingDeps)
 	} else {
-		log.Println("所有必要依赖均已找到，程序可以正常运行。")
+		log.Println("所有必要依赖均已找到,程序可以正常运行.")
 	}
 }
 func CheckImageDependencies() {
@@ -60,9 +60,9 @@ func CheckImageDependencies() {
 
 	// 检查是否有缺失的依赖
 	if len(missingDeps) > 0 {
-		log.Fatalf("缺少以下必要依赖: %v，请安装后再运行程序。\n", missingDeps)
+		log.Fatalf("缺少以下必要依赖: %v,请安装后再运行程序.\n", missingDeps)
 	} else {
-		log.Println("所有必要依赖均已找到，程序可以正常运行。")
+		log.Println("所有必要依赖均已找到,程序可以正常运行.")
 	}
 }
 
