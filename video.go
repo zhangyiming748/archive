@@ -315,9 +315,9 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 	// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
 	args = append(args, "-pix_fmt", "yuv420p")
 	args = append(args, "-x265-params", "aq-mode=3:aq-strength=1.2:psy-rd=2.0:psy-rdoq=2.0:rdoq-level=1") // 优化的心理视觉参数
-	// if fhd && overFHD(vInfo) {
-	// 	args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
-	// }
+	if fhd && overFHD(vInfo) {
+		args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
+	}
 	args = append(args, "-map_chapters", "-1")
 	if force {
 		args = append(args, "-y")
