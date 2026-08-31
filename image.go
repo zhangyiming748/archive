@@ -56,8 +56,8 @@ func Convert2AVIF(src string, threads int) error {
 }
 
 /*
-bmp先使用ffmpeg转换成中间格式jpg，再使用avifenc转换成avif
-需要安装用 ImageMagick（macOS 上 brew install imagemagick）
+bmp先使用ffmpeg转换成中间格式jpg,再使用avifenc转换成avif
+需要安装用 ImageMagick(macOS 上 brew install imagemagick)
 */
 func ConvertBMP2AVIF4JPG(src, dst string, threads int) {
 	if strings.ToLower(filepath.Ext(src)) != ".bmp" {

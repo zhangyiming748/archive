@@ -96,12 +96,12 @@ func ExecuteCommandWithRealtimeOutput(cmd *exec.Cmd) error {
 //
 // 返回值:
 //   - int: 提取到的帧数
-//   - error: 提取过程中的错误，如果提取成功则返回nil
+//   - error: 提取过程中的错误,如果提取成功则返回nil
 func GetFrameNum(s string) (int, error) {
 	// 使用正则表达式匹配frame=后面的数字
 	re := regexp.MustCompile(`frame=\s*(\d+)`)
 	matches := re.FindStringSubmatch(s)
-	// 如果匹配成功，将匹配到的数字转换为整数返回
+	// 如果匹配成功,将匹配到的数字转换为整数返回
 	if len(matches) > 1 {
 		frameNumber := matches[1]
 		frame, _ := strconv.Atoi(frameNumber)

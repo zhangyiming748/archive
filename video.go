@@ -14,11 +14,11 @@ import (
 	"github.com/zhangyiming748/stand"
 )
 
-// opusStereoDownmix libopus 只支持有限的声道布局（如 5.1(side) 等非标布局会报 Invalid channel layout），
-// 通过 pan 滤镜显式降级为立体声，表达式中不存在的声道自动按 0 处理，不影响原有的立体声/单声道输入
+// opusStereoDownmix libopus 只支持有限的声道布局(如 5.1(side) 等非标布局会报 Invalid channel layout),
+// 通过 pan 滤镜显式降级为立体声,表达式中不存在的声道自动按 0 处理,不影响原有的立体声/单声道输入
 const opusStereoDownmix = "pan=stereo|c0=FL+0.5*FC+0.5*BL+0.5*SL|c1=FR+0.5*FC+0.5*BR+0.5*SR"
 
-// 转换mkv文件为h265格式,但保留全部的音频轨、字幕轨
+// 转换mkv文件为h265格式,但保留全部的音频轨,字幕轨
 // ffmpeg -i .\天将雄狮.Dragon.Blade.2015.BluRay.1080p.x265.10bit.MNHD-FRDS.mkv -map 0 -c:v libx265 -c:a aac -tag:v hvc1 -c:s copy 天将雄狮.mkv
 func ConvertMKV2H265(src string, fhd bool) {
 	mi := FastMediaInfo.GetStandMediaInfo(src)
@@ -50,11 +50,11 @@ func ConvertMKV2H265(src string, fhd bool) {
 		return
 	}
 
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
-	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
+	//在这里添加一个功能,判断源文件和转换后的文件大小,源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小,之后用fmt.Sprintf打印出差值,单位为MB,保留三位小数
 	diffSize(src, dst)
-	// 如果是 WMV 文件，不删除源文件，直接返回
+	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
 		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
 		return
@@ -62,13 +62,13 @@ func ConvertMKV2H265(src string, fhd bool) {
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
-		//尝试重命名源文件，添加 should_be_deleted
+		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
 	}
-	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
+	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
 	src = replaceExt(src, ".mkv")
@@ -119,7 +119,7 @@ func Convert2H265(src string, fhd, force bool) {
 		args = append(args, "-af", opusStereoDownmix)
 		args = append(args, "-preset", "slow")
 		args = append(args, "-crf", "24") // H.265的CRF 24在画质和大小之间取得良好平衡
-		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
+		// 根据源视频位深自动选择像素格式,避免不必要的10-bit转换
 		args = append(args, "-pix_fmt", "yuv420p")
 		args = append(args, "-x265-params", "aq-mode=3:aq-strength=1.2:psy-rd=2.0:psy-rdoq=2.0:rdoq-level=1") // 优化的心理视觉参数
 		if needsResize {
@@ -144,12 +144,12 @@ func Convert2H265(src string, fhd, force bool) {
 		return
 	}
 
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
 
-	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
+	//在这里添加一个功能,判断源文件和转换后的文件大小,源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小,之后用fmt.Sprintf打印出差值,单位为MB,保留三位小数
 	diffSize(src, dst)
-	// 如果是 WMV 文件，不删除源文件，直接返回
+	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
 		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
 		return
@@ -157,13 +157,13 @@ func Convert2H265(src string, fhd, force bool) {
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
-		//尝试重命名源文件，添加 should_be_deleted
+		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
 	}
-	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
+	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
 	src = replaceExt(src, ".mp4")
@@ -209,7 +209,7 @@ func Convert2H265MP4(src string, fhd, force bool) {
 		args = append(args, "-af", opusStereoDownmix)
 		args = append(args, "-preset", "slow")
 		args = append(args, "-crf", "24") // H.265的CRF 24在画质和大小之间取得良好平衡
-		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
+		// 根据源视频位深自动选择像素格式,避免不必要的10-bit转换
 		args = append(args, "-pix_fmt", "yuv420p")
 		args = append(args, "-x265-params", "aq-mode=3:aq-strength=1.2:psy-rd=2.0:psy-rdoq=2.0:rdoq-level=1") // 优化的心理视觉参数
 		if needsResize {
@@ -233,12 +233,12 @@ func Convert2H265MP4(src string, fhd, force bool) {
 		return
 	}
 
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
 
-	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
+	//在这里添加一个功能,判断源文件和转换后的文件大小,源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小,之后用fmt.Sprintf打印出差值,单位为MB,保留三位小数
 	diffSize(src, dst)
-	// 如果是 WMV 文件，不删除源文件，直接返回
+	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
 		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
 		return
@@ -246,13 +246,13 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
-		//尝试重命名源文件，添加 should_be_deleted
+		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
 	}
-	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
+	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
 	src = replaceExt(src, ".mp4")
@@ -261,10 +261,10 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	}
 }
 
-// isEncodedByLibx265 通过 ffprobe 读取视频流的 encoder 标签判断是否由 libx265 编码。
-// libx265 编码的文件流标签形如 "Lavc... libx265"；
-// 硬件编码器不会带该标签，例如 NVENC HEVC、QSV、AMF 或 VideoToolbox 编码的文件。
-// ffprobe 不可用或标签缺失时返回 false（保守处理，继续走重编码流程）。
+// isEncodedByLibx265 通过 ffprobe 读取视频流的 encoder 标签判断是否由 libx265 编码.
+// libx265 编码的文件流标签形如 "Lavc... libx265";
+// 硬件编码器不会带该标签,例如 NVENC HEVC,QSV,AMF 或 VideoToolbox 编码的文件.
+// ffprobe 不可用或标签缺失时返回 false(保守处理,继续走重编码流程).
 func isEncodedByLibx265(src string) bool {
 	cmd := exec.Command("ffprobe", "-v", "error",
 		"-select_streams", "v:0",
@@ -275,13 +275,13 @@ func isEncodedByLibx265(src string) bool {
 		log.Printf("ffprobe检测编码器失败，按非libx265处理：%v\n", err)
 		return false
 	}
-	// 标签格式如 "encoder=Lavc62.28.102 libx265"（MKV中为大写ENCODER=）
+	// 标签格式如 "encoder=Lavc62.28.102 libx265"(MKV中为大写ENCODER=)
 	return strings.Contains(string(output), "libx265")
 }
 
 /*
-保持原容器格式重编码视频文件（MKV保持MKV、MP4保持MP4），视频流使用libx265重编码，
-编码参数与Convert2H265MP4保持一致；如果检测到原视频已经是libx265编码则跳过重编码
+保持原容器格式重编码视频文件(MKV保持MKV,MP4保持MP4),视频流使用libx265重编码,
+编码参数与Convert2H265MP4保持一致;如果检测到原视频已经是libx265编码则跳过重编码
 */
 func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 	mi := FastMediaInfo.GetStandMediaInfo(src)
@@ -298,7 +298,7 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 	dst := strings.Replace(src, ext, "_tmp"+ext, 1)
 	args := []string{"-i", src}
 
-	// MKV容器需要-map 0保留全部音频轨、字幕轨
+	// MKV容器需要-map 0保留全部音频轨,字幕轨
 	if strings.ToLower(ext) == ".mkv" {
 		args = append(args, "-map", "0")
 		args = append(args, "-c:s", "copy")
@@ -312,7 +312,7 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 	args = append(args, "-af", opusStereoDownmix)
 	args = append(args, "-preset", "slow")
 	args = append(args, "-crf", "24") // H.265的CRF 24在画质和大小之间取得良好平衡
-	// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
+	// 根据源视频位深自动选择像素格式,避免不必要的10-bit转换
 	args = append(args, "-pix_fmt", "yuv420p")
 	args = append(args, "-x265-params", "aq-mode=3:aq-strength=1.2:psy-rd=2.0:psy-rdoq=2.0:rdoq-level=1") // 优化的心理视觉参数
 	if fhd && overFHD(vInfo) {
@@ -335,12 +335,12 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 		return
 	}
 
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
 
-	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
+	//在这里添加一个功能,判断源文件和转换后的文件大小,源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小,之后用fmt.Sprintf打印出差值,单位为MB,保留三位小数
 	diffSize(src, dst)
-	// 如果是 WMV 文件，不删除源文件，直接返回
+	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(ext) == ".wmv" {
 		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
 		return
@@ -348,15 +348,15 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
-		//尝试重命名源文件，添加 should_be_deleted
+		//尝试重命名源文件,添加 should_be_deleted
 		nName := strings.Replace(src, ext, ".should_be_deleted", 1)
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
 	}
-	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
+	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
-	// 容器格式未改变，直接把临时文件改回原文件名
+	// 容器格式未改变,直接把临时文件改回原文件名
 	if err := os.Rename(dst, src); err != nil {
 		log.Fatalf("重命名文件失败：%v\n", err)
 	}
@@ -416,7 +416,7 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 		args = append(args, "-af", opusStereoDownmix)
 		args = append(args, "-preset", "fast")
 		args = append(args, "-crf", "28") // H.265的CRF 24在画质和大小之间取得良好平衡
-		// 根据源视频位深自动选择像素格式，避免不必要的10-bit转换
+		// 根据源视频位深自动选择像素格式,避免不必要的10-bit转换
 		args = append(args, "-pix_fmt", "yuv420p")
 		if needsResize {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
@@ -439,12 +439,12 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 		return
 	}
 
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
 
-	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
+	//在这里添加一个功能,判断源文件和转换后的文件大小,源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小,之后用fmt.Sprintf打印出差值,单位为MB,保留三位小数
 	diffSize(src, dst)
-	// 如果是 WMV 文件，不删除源文件，直接返回
+	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
 		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
 		return
@@ -452,13 +452,13 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
-		//尝试重命名源文件，添加 should_be_deleted
+		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
 	}
-	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
+	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
 	src = replaceExt(src, ".mp4")
@@ -484,8 +484,8 @@ func overFHD(vInfo FastMediaInfo.Video) bool {
 	return false
 }
 
-// checkOutputFileValid 检查输出文件是否有效（非0字节）
-// 如果文件大小为0，说明FFmpeg实际执行失败但未返回错误码
+// checkOutputFileValid 检查输出文件是否有效(非0字节)
+// 如果文件大小为0,说明FFmpeg实际执行失败但未返回错误码
 func checkOutputFileValid(dst string) {
 	dstInfo, err := os.Stat(dst)
 	if err != nil {
@@ -512,7 +512,7 @@ func CloneMkv2H265(src string) {
 	args := []string{"-i", src}
 	dst := replaceExt(src, "_tmp.mkv")
 
-	// 优先检查分辨率是否需要转换（MKV默认启用FHD检查）
+	// 优先检查分辨率是否需要转换(MKV默认启用FHD检查)
 	needsResize := overFHD(vInfo)
 
 	if isH265(vInfo) && strings.ToLower(filepath.Ext(src)) == ".mkv" {
@@ -549,12 +549,12 @@ func CloneMkv2H265(src string) {
 		return
 	}
 
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
 
-	//在这里添加一个功能，判断源文件和转换后的文件大小，源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小，之后用fmt.Sprintf打印出差值，单位为MB，保留三位小数
+	//在这里添加一个功能,判断源文件和转换后的文件大小,源文件通常会大于转换后的文件所以用源文件的大小减去目标文件大小,之后用fmt.Sprintf打印出差值,单位为MB,保留三位小数
 	diffSize(src, dst)
-	// 如果是 WMV 文件，不删除源文件，直接返回
+	// 如果是 WMV 文件,不删除源文件,直接返回
 	if strings.ToLower(filepath.Ext(src)) == ".wmv" {
 		log.Printf("WMV 文件已转换，保留原始文件: %s\n", src)
 		return
@@ -562,13 +562,13 @@ func CloneMkv2H265(src string) {
 	// 先尝试删除源文件
 	if err := os.Remove(src); err != nil {
 		log.Printf("删除源文件失败：%v\t尝试重命名源文件，添加 should_be_deleted\n", err)
-		//尝试重命名源文件，添加 should_be_deleted
+		//尝试重命名源文件,添加 should_be_deleted
 		nName := replaceExt(src, ".should_be_deleted")
 		if err := os.Rename(src, nName); err != nil {
 			log.Fatalf("重命名文件失败：%v\n", err)
 		}
 	}
-	// 源文件删除成功后，等待短暂时间确保文件句柄完全释放
+	// 源文件删除成功后,等待短暂时间确保文件句柄完全释放
 	time.Sleep(100 * time.Millisecond)
 	// 尝试重命名
 	src = replaceExt(src, ".mkv")
@@ -594,7 +594,7 @@ func FastConvertVideo2StandAvc(src string) {
 	args := []string{"-i", src}
 	args = append(args, "-c:v", "libx264")
 	args = append(args, "-preset", "fast")
-	args = append(args, "-crf", "23")          // CRF 23 是 x264 的默认值，在画质和文件大小之间取得平衡
+	args = append(args, "-crf", "23")          // CRF 23 是 x264 的默认值,在画质和文件大小之间取得平衡
 	args = append(args, "-pix_fmt", "yuv420p") // 确保兼容性
 	args = append(args, "-c:a", "libopus")
 	args = append(args, "-b:a", "160k")
@@ -608,7 +608,7 @@ func FastConvertVideo2StandAvc(src string) {
 		log.Printf("转换失败：%v\n", err)
 		return
 	}
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(tmp_name)
 	if err := os.Remove(src); err != nil {
 		log.Fatalf("删除源文件失败：%v\n", err)
@@ -636,7 +636,7 @@ func FastConvertMkv(src string) {
 		log.Printf("转换失败：%v\n", err)
 		return
 	}
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(mp4)
 	if err := os.Remove(src); err != nil {
 		log.Fatalf("删除源文件失败：%v\n", err)
@@ -658,7 +658,7 @@ func MergeMp4WithSameNameSrt(video, srt string) error {
 		log.Printf("内嵌字幕失败：%v\n", err)
 		return err
 	}
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(output)
 	return nil
 }
@@ -685,16 +685,16 @@ func RotateVideo(src string, direction string) {
 		return
 	}
 	if hasNvidia() {
-		// NVIDIA NVENC: 使用高质量预设，CRF模式保持画质
+		// NVIDIA NVENC: 使用高质量预设,CRF模式保持画质
 		args = append(args, "-c:v", "h264_nvenc")
-		args = append(args, "-preset", "p5") // slow预设，质量与速度平衡
+		args = append(args, "-preset", "p5") // slow预设,质量与速度平衡
 		args = append(args, "-rc", "vbr")    // 可变比特率
-		args = append(args, "-cq", "18")     // 恒定质量等级，18为高质量
+		args = append(args, "-cq", "18")     // 恒定质量等级,18为高质量
 		args = append(args, "-b:v", "0")     // 不限制最大比特率
 	} else if hasIntel() {
 		// Intel QSV: 使用ICQ模式获得最佳质量
 		args = append(args, "-c:v", "h264_qsv")
-		args = append(args, "-global_quality", "18")   // ICQ质量等级，18为高质量
+		args = append(args, "-global_quality", "18")   // ICQ质量等级,18为高质量
 		args = append(args, "-look_ahead", "1")        // 启用前瞻分析
 		args = append(args, "-look_ahead_depth", "40") // 前瞻深度
 	} else if hasAMD() {
@@ -707,8 +707,8 @@ func RotateVideo(src string, direction string) {
 	} else {
 		// CPU软件编码 libx264: 使用slow预设和CRF 18
 		args = append(args, "-c:v", "libx264")
-		args = append(args, "-preset", "slow")     // slow预设，质量与压缩率平衡
-		args = append(args, "-crf", "18")          // CRF 18，视觉无损级别
+		args = append(args, "-preset", "slow")     // slow预设,质量与压缩率平衡
+		args = append(args, "-crf", "18")          // CRF 18,视觉无损级别
 		args = append(args, "-pix_fmt", "yuv420p") // 标准像素格式
 	}
 	args = append(args, "-tag:v", "avc1")
@@ -724,7 +724,7 @@ func RotateVideo(src string, direction string) {
 		log.Printf("旋转失败：%v\n", err)
 		return
 	}
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(tmp_name)
 	/*
 		1. 删除旧文件
@@ -782,7 +782,7 @@ func DjiVideoConvert(src, dst string) {
 		log.Printf("转换失败：%v\n", err)
 		return
 	}
-	// 检查转换后的文件是否为0字节，如果是则说明FFmpeg实际执行失败
+	// 检查转换后的文件是否为0字节,如果是则说明FFmpeg实际执行失败
 	checkOutputFileValid(dst)
 }
 func hasNvidia() bool {

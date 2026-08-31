@@ -1,4 +1,4 @@
-// Package archive 提供音频文件处理和转换的功能，包括音频文件的检测、转换和存档
+// Package archive 提供音频文件处理和转换的功能,包括音频文件的检测,转换和存档
 package archive
 
 import (
@@ -12,9 +12,9 @@ import (
 )
 
 // replaceExt 将路径末尾的文件名扩展名替换为 newExt
-// 注意：不能用 strings.Replace(src, filepath.Ext(src), ...) 实现，
-// 该写法会替换路径中首次出现的位置，当父目录名包含与扩展名相同的字符串时（如 "01.2003-乐.opus+wav"）会误替换目录名，
-// 这里只针对文件名部分做后缀替换，避免误伤路径中的其他片段；文件无扩展名时直接追加 newExt
+// 注意:不能用 strings.Replace(src, filepath.Ext(src), ...) 实现,
+// 该写法会替换路径中首次出现的位置,当父目录名包含与扩展名相同的字符串时(如 "01.2003-乐.opus+wav")会误替换目录名,
+// 这里只针对文件名部分做后缀替换,避免误伤路径中的其他片段;文件无扩展名时直接追加 newExt
 func replaceExt(src, newExt string) string {
 	ext := filepath.Ext(src)
 	if ext == "" {
@@ -30,7 +30,7 @@ const (
 	// RapMusicType 说唱音乐类型标识
 	RapMusicType = "rap"
 	// Speed        = "1.54" //等效audition的65%
-	// Speed = "1.43" 音频播放速度，等效audition的70%
+	// Speed = "1.43" 音频播放速度,等效audition的70%
 	// Volume 音频音量增益值
 	Volume = "2.7"
 )
@@ -38,7 +38,7 @@ const (
 /*
 ConvertAudio 转换音频文件
 src 为源文件路径
-mytype 为音频类型，决定处理方式
+mytype 为音频类型,决定处理方式
 */
 func ConvertAudio(src, mytype string) {
 	// 生成临时文件路径
@@ -49,8 +49,8 @@ func ConvertAudio(src, mytype string) {
 	ff := audition2ffmpeg("65")
 	atempo := strings.Join([]string{"atempo", ff}, "=")
 	volume := strings.Join([]string{"volume", Volume}, "=")
-	// 将 atempo、volume 和 opus 立体声降级滤镜组合成滤镜链
-	// 注意：-filter:a 与 -af 是同一参数的别名，不能分开重复指定，否则后者会覆盖前者
+	// 将 atempo,volume 和 opus 立体声降级滤镜组合成滤镜链
+	// 注意:-filter:a 与 -af 是同一参数的别名,不能分开重复指定,否则后者会覆盖前者
 	filterChain := strings.Join([]string{opusStereoDownmix, atempo, volume}, ",")
 	//ffmpeg -i input.mp3 -c:a libopus -b:a 160k -application audio output.opus
 	args = append(args, "-c:a", "libopus")
@@ -106,7 +106,7 @@ func Convert2Mp3(src string) {
 		log.Printf("文件已经是MP3格式,无需转换:%v\n", src)
 		return
 	}
-	//转换给定的文件为高品质MP3编码的MP3文件（320kbps，人耳无损）
+	//转换给定的文件为高品质MP3编码的MP3文件(320kbps,人耳无损)
 	mp3 := replaceExt(src, ".mp3")
 	var (
 		args []string
@@ -114,9 +114,9 @@ func Convert2Mp3(src string) {
 	)
 	args = append(args, "-i", src)
 	args = append(args, "-c:a", "libmp3lame")
-	args = append(args, "-b:a", "320k") // 比特率320kbps，最高音质
+	args = append(args, "-b:a", "320k") // 比特率320kbps,最高音质
 	args = append(args, "-q:a", "0")    // LAME编码器最高质量等级
-	args = append(args, "-ar", "44100") // 采样率44.1kHz（CD音质）
+	args = append(args, "-ar", "44100") // 采样率44.1kHz(CD音质)
 	args = append(args, mp3)
 	cmd = exec.Command("ffmpeg", args...)
 	if out, err := cmd.CombinedOutput(); err != nil {
@@ -134,7 +134,7 @@ func Convert2Aac(src string) {
 		log.Printf("文件已经是AAC格式,无需转换:%v\n", src)
 		return
 	}
-	//转换给定的文件为高品质AAC编码的M4A文件（256kbps，接近无损）
+	//转换给定的文件为高品质AAC编码的M4A文件(256kbps,接近无损)
 	aac := replaceExt(src, ".m4a")
 	var (
 		args []string
@@ -142,9 +142,9 @@ func Convert2Aac(src string) {
 	)
 	args = append(args, "-i", src)
 	args = append(args, "-c:a", "aac")             // 使用AAC编码器
-	args = append(args, "-b:a", "256k")            // 比特率256kbps，高品质
-	args = append(args, "-ar", "44100")            // 采样率44.1kHz（CD音质）
-	args = append(args, "-profile:a", "aac_he_v2") // 使用HE-AAC v2配置，更高效率
+	args = append(args, "-b:a", "256k")            // 比特率256kbps,高品质
+	args = append(args, "-ar", "44100")            // 采样率44.1kHz(CD音质)
+	args = append(args, "-profile:a", "aac_he_v2") // 使用HE-AAC v2配置,更高效率
 	args = append(args, aac)
 	cmd = exec.Command("ffmpeg", args...)
 	if out, err := cmd.CombinedOutput(); err != nil {

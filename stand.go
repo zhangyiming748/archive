@@ -68,7 +68,7 @@ func CheckImageDependencies() {
 
 // isCommandAvailable 检查指定的命令是否在系统中可用
 func isCommandAvailable(name string) bool {
-	// 在Windows系统上，需要添加.exe扩展名
+	// 在Windows系统上,需要添加.exe扩展名
 	if _, err := exec.LookPath(name); err != nil {
 		return false
 	}
