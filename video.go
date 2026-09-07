@@ -175,7 +175,7 @@ func Convert2H265(src string, fhd, force bool) {
 /*
 最终转换视频文件为带hvc1标签的MP4文件
 */
-func Convert2H265MP4(src string, fhd, force bool) {
+func Convert2H265MP4(src string, fhd, force bool)(success bool){
 	mi := FastMediaInfo.GetStandMediaInfo(src)
 	vInfo := mi.Video
 	var cmd *exec.Cmd
@@ -259,6 +259,7 @@ func Convert2H265MP4(src string, fhd, force bool) {
 	if err := os.Rename(dst, src); err != nil {
 		log.Fatalf("重命名文件失败:%v\n", err)
 	}
+	return true
 }
 
 // isEncodedByLibx265 通过 ffprobe 读取视频流的 encoder 标签判断是否由 libx265 编码.
@@ -283,7 +284,7 @@ func isEncodedByLibx265(src string) bool {
 保持原容器格式重编码视频文件(MKV保持MKV,MP4保持MP4),视频流使用libx265重编码,
 编码参数与Convert2H265MP4保持一致;如果检测到原视频已经是libx265编码则跳过重编码
 */
-func ReEncode2H265KeepContainer(src string, fhd, force bool) {
+func ReEncode2H265KeepContainer(src string, fhd, force bool) (success bool) {
 	mi := FastMediaInfo.GetStandMediaInfo(src)
 	vInfo := mi.Video
 
@@ -360,6 +361,7 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) {
 	if err := os.Rename(dst, src); err != nil {
 		log.Fatalf("重命名文件失败:%v\n", err)
 	}
+	return true
 }
 
 func isH265(vInfo FastMediaInfo.Video) bool {
