@@ -95,7 +95,9 @@ func Convert2H265(src string, fhd, force bool) {
 	// 优先检查分辨率是否需要转换
 	needsResize := fhd && overFHD(vInfo)
 
-	if isH265(vInfo) && filepath.Ext(src) == ".mp4" {
+	// HEVC编码且确实由libx265编码器产出时才跳过/仅补hvc1标签;
+	// 即使是HEVC,只要是硬件编码器(NVENC/QSV/AMF/VideoToolbox等)或非libx265产出,也走下方libx265重编码分支
+	if isH265(vInfo) && isEncodedByLibx265(src) && filepath.Ext(src) == ".mp4" {
 		if hasTag(vInfo) && !needsResize {
 			log.Printf("跳过已经是h265编码并且带有hvc1标签且分辨率符合要求的视频文件:%s\n", src)
 			return
@@ -110,7 +112,11 @@ func Convert2H265(src string, fhd, force bool) {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	} else {
-		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
+		if isH265(vInfo) {
+			log.Printf("视频是HEVC编码但非libx265编码器产出,使用libx265重新编码:%s\n", src)
+		} else {
+			log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
+		}
 		args = append(args, "-c:v", "libx265")
 		args = append(args, "-tag:v", "hvc1")
 		args = append(args, "-c:a", "libopus")
@@ -187,7 +193,9 @@ func Convert2H265MP4(src string, fhd, force bool) (success bool) {
 	// 优先检查分辨率是否需要转换
 	needsResize := fhd && overFHD(vInfo)
 
-	if isH265(vInfo) && filepath.Ext(src) == ".mp4" {
+	// HEVC编码且确实由libx265编码器产出时才跳过/仅补hvc1标签;
+	// 即使是HEVC,只要是硬件编码器(NVENC/QSV/AMF/VideoToolbox等)或非libx265产出,也走下方libx265重编码分支
+	if isH265(vInfo) && isEncodedByLibx265(src) && filepath.Ext(src) == ".mp4" {
 		if hasTag(vInfo) && !needsResize {
 			log.Printf("跳过已经是h265编码并且带有hvc1标签且分辨率符合要求的视频文件:%s\n", src)
 			return
@@ -202,7 +210,11 @@ func Convert2H265MP4(src string, fhd, force bool) (success bool) {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	} else {
-		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
+		if isH265(vInfo) {
+			log.Printf("视频是HEVC编码但非libx265编码器产出,使用libx265重新编码:%s\n", src)
+		} else {
+			log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
+		}
 		args = append(args, "-c:v", "libx265")
 		args = append(args, "-tag:v", "hvc1")
 		args = append(args, "-c:a", "libopus")
@@ -431,7 +443,9 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 	// 优先检查分辨率是否需要转换
 	needsResize := fhd && overFHD(vInfo)
 
-	if isH265(vInfo) && filepath.Ext(src) == ".mp4" {
+	// HEVC编码且确实由libx265编码器产出时才跳过/仅补hvc1标签;
+	// 即使是HEVC,只要是硬件编码器(NVENC/QSV/AMF/VideoToolbox等)或非libx265产出,也走下方libx265重编码分支
+	if isH265(vInfo) && isEncodedByLibx265(src) && filepath.Ext(src) == ".mp4" {
 		if hasTag(vInfo) && !needsResize {
 			log.Printf("跳过已经是h265编码并且带有hvc1标签且分辨率符合要求的视频文件:%s\n", src)
 			return
@@ -446,7 +460,11 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	} else {
-		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
+		if isH265(vInfo) {
+			log.Printf("视频是HEVC编码但非libx265编码器产出,使用libx265重新编码:%s\n", src)
+		} else {
+			log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
+		}
 		args = append(args, "-c:v", "libx265")
 		args = append(args, "-tag:v", "hvc1")
 		args = append(args, "-c:a", "libopus")
@@ -556,7 +574,9 @@ func CloneMkv2H265(src string) {
 	// 优先检查分辨率是否需要转换(MKV默认启用FHD检查)
 	needsResize := overFHD(vInfo)
 
-	if isH265(vInfo) && strings.ToLower(filepath.Ext(src)) == ".mkv" {
+	// HEVC编码且确实由libx265编码器产出时才跳过/仅补hvc1标签;
+	// 即使是HEVC,只要是硬件编码器(NVENC/QSV/AMF/VideoToolbox等)或非libx265产出,也走下方libx265重编码分支
+	if isH265(vInfo) && isEncodedByLibx265(src) && strings.ToLower(filepath.Ext(src)) == ".mkv" {
 		if hasTag(vInfo) && !needsResize {
 			log.Printf("跳过已经是h265编码并且带有hvc1标签且分辨率符合要求的mkv视频文件:%s\n", src)
 			return
@@ -571,7 +591,11 @@ func CloneMkv2H265(src string) {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	} else {
-		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
+		if isH265(vInfo) {
+			log.Printf("视频是HEVC编码但非libx265编码器产出,使用libx265重新编码:%s\n", src)
+		} else {
+			log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
+		}
 		args = append(args, "-map", "0", "-c:v", "libx265", "-tag:v", "hvc1", "-c:s", "copy")
 		args = append(args, "-c:a", "libopus")
 		args = append(args, "-b:a", "160k")
