@@ -126,6 +126,8 @@ func Convert2H265(src string, fhd, force bool) {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	}
+	// 如果视频带字幕流,字幕轨原样(copy)保留,不转码也不丢弃
+	args = appendSubtitleCopyArgs(args, src)
 	args = append(args, "-map_chapters", "-1")
 	if force {
 		args = append(args, "-y")
@@ -175,7 +177,7 @@ func Convert2H265(src string, fhd, force bool) {
 /*
 最终转换视频文件为带hvc1标签的MP4文件
 */
-func Convert2H265MP4(src string, fhd, force bool)(success bool){
+func Convert2H265MP4(src string, fhd, force bool) (success bool) {
 	mi := FastMediaInfo.GetStandMediaInfo(src)
 	vInfo := mi.Video
 	var cmd *exec.Cmd
@@ -216,6 +218,8 @@ func Convert2H265MP4(src string, fhd, force bool)(success bool){
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	}
+	// 如果视频带字幕流,字幕轨原样(copy)保留,不转码也不丢弃
+	args = appendSubtitleCopyArgs(args, src)
 	args = append(args, "-map_chapters", "-1")
 	if force {
 		args = append(args, "-y")
@@ -280,6 +284,35 @@ func isEncodedByLibx265(src string) bool {
 	return strings.Contains(string(output), "libx265")
 }
 
+// hasSubtitleStream 通过 ffprobe 检测文件是否包含字幕流.
+// 用于决定是否需要在 ffmpeg 命令中显式映射并以 copy 方式保留全部字幕轨;
+// ffprobe 不可用或检测失败时返回 false(按无字幕处理,保持原有转换行为).
+func hasSubtitleStream(src string) bool {
+	cmd := exec.Command("ffprobe", "-v", "error",
+		"-select_streams", "s",
+		"-show_entries", "stream=index",
+		"-of", "csv=p=0", src)
+	output, err := cmd.Output()
+	if err != nil {
+		log.Printf("ffprobe检测字幕流失败,按无字幕处理:%v\n", err)
+		return false
+	}
+	return len(strings.TrimSpace(string(output))) > 0
+}
+
+// appendSubtitleCopyArgs 检测到字幕流时,显式映射全部视频/音频/字幕流并以 copy 原样保留字幕轨.
+// 一旦使用了 -map,ffmpeg 的默认流选择会被完全禁用,因此视频流和音频流也需要一并显式映射;
+// 映射说明符后的 ? 表示该类型流不存在时不报错.
+func appendSubtitleCopyArgs(args []string, src string) []string {
+	if !hasSubtitleStream(src) {
+		return args
+	}
+	log.Printf("检测到字幕流,全部字幕轨原样(copy)保留,不做转码:%s\n", src)
+	args = append(args, "-map", "0:v?", "-map", "0:a?", "-map", "0:s?")
+	args = append(args, "-c:s", "copy")
+	return args
+}
+
 /*
 保持原容器格式重编码视频文件(MKV保持MKV,MP4保持MP4),视频流使用libx265重编码,
 编码参数与Convert2H265MP4保持一致;如果检测到原视频已经是libx265编码则跳过重编码
@@ -299,10 +332,14 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) (success bool) {
 	dst := strings.Replace(src, ext, "_tmp"+ext, 1)
 	args := []string{"-i", src}
 
-	// MKV容器需要-map 0保留全部音频轨,字幕轨
+	// 带字幕流时字幕轨必须原样(copy)保留,不做任何转码/丢弃
 	if strings.ToLower(ext) == ".mkv" {
+		// MKV容器支持任意字幕格式,-map 0保留全部音频轨、字幕轨
 		args = append(args, "-map", "0")
 		args = append(args, "-c:s", "copy")
+	} else {
+		// 其他容器(如MP4)默认只选择一条流,检测到字幕流时显式映射全部流并copy字幕轨
+		args = appendSubtitleCopyArgs(args, src)
 	}
 
 	args = append(args, "-c:v", "libx265")
@@ -424,6 +461,8 @@ func Convert2SmallerH265MP4(src string, fhd, force bool) {
 			args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 		}
 	}
+	// 如果视频带字幕流,字幕轨原样(copy)保留,不转码也不丢弃
+	args = appendSubtitleCopyArgs(args, src)
 	args = append(args, "-map_chapters", "-1")
 	if force {
 		args = append(args, "-y")
@@ -533,7 +572,7 @@ func CloneMkv2H265(src string) {
 		}
 	} else {
 		log.Printf("处理不是HEVC编码的视频文件:%s\n", src)
-		args = append(args, "-map", "0", "-c:v", "libx265", "-tag:v", "hvc1")
+		args = append(args, "-map", "0", "-c:v", "libx265", "-tag:v", "hvc1", "-c:s", "copy")
 		args = append(args, "-c:a", "libopus")
 		args = append(args, "-b:a", "160k")
 		args = append(args, "-application", "audio")
@@ -776,6 +815,8 @@ func DjiVideoConvert(src, dst string) {
 	args = append(args, "-b:a", "160k")
 	args = append(args, "-application", "audio")
 	args = append(args, "-af", opusStereoDownmix)
+	// 大疆素材通常无字幕流;若检测到字幕流则字幕轨原样(copy)保留,不转码也不丢弃
+	args = appendSubtitleCopyArgs(args, src)
 	args = append(args, "-map_chapters", "-1")
 	args = append(args, dst)
 	cmd = exec.Command("ffmpeg", args...)
