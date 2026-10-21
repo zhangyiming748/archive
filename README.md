@@ -84,7 +84,7 @@ func main() {
     // 批量转换视频文件为 H.265
     videos := finder.FindAllVideos("/path/to/videos")
     for _, video := range videos {
-        archive.Convert2H265(video)
+        archive.Convert2H265(video, false, false, 0)
     }
     
     // 转换单个图片为 AVIF
@@ -118,7 +118,7 @@ if err != nil {
 | 函数 | 描述 | 参数 |
 |------|------|------|
 | `ConvertMKV2H265(src string)` | MKV 转 H.265，保留所有音轨字幕 | 源文件路径 |
-| `Convert2H265(src string)` | 通用视频转 H.265 MP4 | 源文件路径 |
+| `Convert2H265(src string, fhd, force bool, limit int)` | 通用视频转 H.265 MP4，limit 为 FFmpeg 线程数（0 为全部线程） | 源文件路径 |
 | `CloneMkv2H265(src string)` | MKV 文件克隆转码 | 源文件路径 |
 | `FastConvertVideo2StandAvc(src string)` | 快速标准化 AVC 转换 | 源文件路径 |
 | `FastConvertMkv(src string)` | 快速 MKV 转 MP4 | 源文件路径 |

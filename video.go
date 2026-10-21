@@ -79,11 +79,12 @@ func ConvertMKV2H265(src string, fhd bool) {
 
 /*
 最终转换视频文件为带hvc1标签的MP4文件 mkv除外
+limit 控制 FFmpeg 可使用的 CPU 线程数,填几就是几;填 0 时同样传 0,由 FFmpeg 自行使用全部线程
 */
-func Convert2H265(src string, fhd, force bool) {
+func Convert2H265(src string, fhd, force bool, limit int) {
 	if strings.ToLower(filepath.Ext(src)) == ".mkv" {
 		log.Printf("检测到mkv文件:%s,使用mkv逻辑单独处理", src)
-		CloneMkv2H265(src)
+		ReEncode2H265KeepContainer(src, fhd, force)
 		return
 	}
 	mi := FastMediaInfo.GetStandMediaInfo(src)
@@ -134,6 +135,8 @@ func Convert2H265(src string, fhd, force bool) {
 	}
 	// 如果视频带字幕流,字幕轨原样(copy)保留,不转码也不丢弃
 	args = appendSubtitleCopyArgs(args, src)
+	// 限制 FFmpeg 可使用的 CPU 线程数,0 表示由 FFmpeg 自行使用全部线程
+	args = append(args, "-threads", strconv.Itoa(limit))
 	args = append(args, "-map_chapters", "-1")
 	if force {
 		args = append(args, "-y")
