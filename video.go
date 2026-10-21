@@ -84,7 +84,7 @@ limit 控制 FFmpeg 可使用的 CPU 线程数,填几就是几;填 0 时同样�
 func Convert2H265(src string, fhd, force bool, limit int) {
 	if strings.ToLower(filepath.Ext(src)) == ".mkv" {
 		log.Printf("检测到mkv文件:%s,使用mkv逻辑单独处理", src)
-		ReEncode2H265KeepContainer(src, fhd, force)
+		ReEncode2H265KeepContainer(src, fhd, force, limit)
 		return
 	}
 	mi := FastMediaInfo.GetStandMediaInfo(src)
@@ -331,8 +331,9 @@ func appendSubtitleCopyArgs(args []string, src string) []string {
 /*
 保持原容器格式重编码视频文件(MKV保持MKV,MP4保持MP4),视频流使用libx265重编码,
 编码参数与Convert2H265MP4保持一致;如果检测到原视频已经是libx265编码则跳过重编码
+limit 控制 FFmpeg 可使用的 CPU 线程数,填几就是几;填 0 时同样传 0,由 FFmpeg 自行使用全部线程
 */
-func ReEncode2H265KeepContainer(src string, fhd, force bool) (success bool) {
+func ReEncode2H265KeepContainer(src string, fhd, force bool, limit int) (success bool) {
 	mi := FastMediaInfo.GetStandMediaInfo(src)
 	vInfo := mi.Video
 
@@ -371,6 +372,8 @@ func ReEncode2H265KeepContainer(src string, fhd, force bool) (success bool) {
 	if fhd && overFHD(vInfo) {
 		args = append(args, "-vf", "scale=if(gt(iw\\,ih)\\,iw*1080/ih\\,1920):if(gt(iw\\,ih)\\,1080\\,ih*1920/iw):-2")
 	}
+	// 限制 FFmpeg 可使用的 CPU 线程数,0 表示由 FFmpeg 自行使用全部线程
+	args = append(args, "-threads", strconv.Itoa(limit))
 	args = append(args, "-map_chapters", "-1")
 	if force {
 		args = append(args, "-y")
